@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMatch } from '@/context/MatchContext';
@@ -83,7 +82,7 @@ const ResumeMatch = () => {
             error={passwordError}
             required
             disabled={isLoading}
-            icon={<Key className="h-4 w-4 text-muted-foreground" />}
+            iconLeft={<Key className="h-4 w-4" />}
           />
           
           <div className="flex justify-between pt-2">

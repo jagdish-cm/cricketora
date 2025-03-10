@@ -77,7 +77,7 @@ const NewMatch = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             error={emailError}
-            icon={<Mail className="h-4 w-4 text-muted-foreground" />}
+            iconLeft={<Mail className="h-4 w-4" />}
             required
             disabled={isLoading}
             className="transition-all duration-300"

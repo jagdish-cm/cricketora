@@ -99,24 +99,33 @@ export const FormInput = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof ShadcnInput> & {
     label?: string;
     error?: string;
+    iconLeft?: React.ReactNode;
   }
->(({ className, label, error, id, ...props }, ref) => (
+>(({ className, label, error, id, iconLeft, ...props }, ref) => (
   <div className="space-y-2">
     {label && (
       <Label htmlFor={id} className="text-sm font-medium">
         {label}
       </Label>
     )}
-    <ShadcnInput
-      ref={ref}
-      id={id}
-      className={cn(
-        "transition-all-200 shadow-input focus:shadow-none",
-        error && "border-red-500 focus:ring-red-500",
-        className
+    <div className="relative">
+      {iconLeft && (
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+          {iconLeft}
+        </div>
       )}
-      {...props}
-    />
+      <ShadcnInput
+        ref={ref}
+        id={id}
+        className={cn(
+          "transition-all-200 shadow-input focus:shadow-none",
+          iconLeft && "pl-10",
+          error && "border-red-500 focus:ring-red-500",
+          className
+        )}
+        {...props}
+      />
+    </div>
     {error && (
       <p className="text-xs text-red-500 animate-slide-up">{error}</p>
     )}

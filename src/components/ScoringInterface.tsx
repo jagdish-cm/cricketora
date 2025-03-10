@@ -11,7 +11,7 @@ import {
   User, 
   Users, 
   Menu,
-  Cricket,
+  Award,
   RotateCw,
   Clock,
   Settings,
@@ -99,7 +99,7 @@ const ScoreHeader = ({ match }: { match: any }) => {
       <div className="container max-w-4xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Cricket className="h-5 w-5 text-primary mr-2" />
+            <Award className="h-5 w-5 text-primary mr-2" />
             <span className="font-medium">CricketOra</span>
           </div>
           

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMatch } from '@/context/MatchContext';
@@ -13,7 +12,7 @@ import {
 } from '@/components/ui-components';
 import { 
   CircleOff, 
-  Cricket,
+  Award,
   Users,
   ChevronLeft,
   ChevronRight,
@@ -35,7 +34,6 @@ const MatchSetup = () => {
   const [currentStep, setCurrentStep] = useState('teams');
   const [matchCopied, setMatchCopied] = useState(false);
   
-  // Navigation guard - redirect if no match in context
   useEffect(() => {
     if (!match) {
       navigate('/');
@@ -49,7 +47,6 @@ const MatchSetup = () => {
   
   if (!match) return null;
 
-  // Copy match ID to clipboard
   const copyMatchId = () => {
     navigator.clipboard.writeText(match.id);
     setMatchCopied(true);
@@ -69,7 +66,7 @@ const MatchSetup = () => {
       
       <div className="flex justify-center items-center mb-4">
         <div className="flex items-center space-x-2 py-1 px-3 rounded-full bg-primary/10 text-primary text-sm">
-          <Cricket className="h-4 w-4" />
+          <Award className="h-4 w-4" />
           <span className="font-medium">Match ID:</span>
           <code className="font-mono">{match.id}</code>
           <button 
@@ -100,12 +97,10 @@ const MatchSetup = () => {
             </TabsTrigger>
           </TabsList>
           
-          {/* Teams Setup */}
           <TabsContent value="teams" className="animate-fade-in">
             <TeamSetup match={match} updateMatch={updateMatch} onNext={() => setCurrentStep('toss')} />
           </TabsContent>
           
-          {/* Toss Setup */}
           <TabsContent value="toss" className="animate-fade-in">
             <TossSetup 
               match={match} 
@@ -115,7 +110,6 @@ const MatchSetup = () => {
             />
           </TabsContent>
           
-          {/* Rules Setup */}
           <TabsContent value="rules" className="animate-fade-in">
             <RulesSetup 
               match={match} 
@@ -131,7 +125,6 @@ const MatchSetup = () => {
   );
 };
 
-// Teams Setup Component
 const TeamSetup = ({ 
   match, 
   updateMatch, 
@@ -214,7 +207,6 @@ const TeamSetup = ({
             disabled={isSaving}
           />
           
-          {/* Player entry fields would go here */}
           <div className="mt-2 opacity-60">
             <p className="text-xs text-muted-foreground">
               Player entry will be available in a future update.
@@ -234,7 +226,6 @@ const TeamSetup = ({
             disabled={isSaving}
           />
           
-          {/* Player entry fields would go here */}
           <div className="mt-2 opacity-60">
             <p className="text-xs text-muted-foreground">
               Player entry will be available in a future update.
@@ -257,7 +248,6 @@ const TeamSetup = ({
   );
 };
 
-// Toss Setup Component
 const TossSetup = ({ 
   match, 
   updateMatch,
@@ -374,7 +364,6 @@ const TossSetup = ({
   );
 };
 
-// Rules Setup Component
 const RulesSetup = ({ 
   match, 
   updateMatch,
@@ -414,7 +403,6 @@ const RulesSetup = ({
           byesValid,
           legByesValid
         },
-        // Create the first innings based on toss result
         innings: [{
           battingTeamId: match.choseTo === 'bat' ? match.tossWonBy : 
                           (match.tossWonBy === match.team1.id ? match.team2.id : match.team1.id),

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Cricket, ChevronRight, PlayCircle, Clock, Eye } from 'lucide-react';
+import { Award, ChevronRight, PlayCircle, Clock, Eye } from 'lucide-react';
 import { PageContainer, GlassCard, Button } from '@/components/ui-components';
 
 const Index = () => {
@@ -11,7 +11,7 @@ const Index = () => {
     <PageContainer>
       <div className="flex flex-col items-center animate-fade-in">
         <div className="mb-6 flex items-center">
-          <Cricket className="h-8 w-8 text-primary mr-2" />
+          <Award className="h-8 w-8 text-primary mr-2" />
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-primary">
             CricketOra
           </h1>
