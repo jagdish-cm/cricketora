@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,16 +53,13 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
-				}
+				cricket: {
+					primary: '#1E90FF',
+					secondary: '#F0F7FF',
+					accent: '#0070F3',
+					muted: '#F5F8FC',
+					dark: '#0A1F44',
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -70,27 +68,100 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' },
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
-					},
-					to: {
-						height: '0'
-					}
-				}
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' },
+				},
+				'fade-in': {
+					from: { opacity: '0' },
+					to: { opacity: '1' },
+				},
+				'fade-out': {
+					from: { opacity: '1' },
+					to: { opacity: '0' },
+				},
+				'slide-up': {
+					from: { transform: 'translateY(10px)', opacity: '0' },
+					to: { transform: 'translateY(0)', opacity: '1' },
+				},
+				'slide-down': {
+					from: { transform: 'translateY(-10px)', opacity: '0' },
+					to: { transform: 'translateY(0)', opacity: '1' },
+				},
+				'pulse-subtle': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.7' },
+				},
+				'scale-in': {
+					from: { transform: 'scale(0.95)', opacity: '0' },
+					to: { transform: 'scale(1)', opacity: '1' },
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.3s ease-out',
+				'fade-out': 'fade-out 0.3s ease-out',
+				'slide-up': 'slide-up 0.4s ease-out',
+				'slide-down': 'slide-down 0.4s ease-out',
+				'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
+				'scale-in': 'scale-in 0.3s ease-out',
+			},
+			backdropFilter: {
+				'none': 'none',
+				'blur': 'blur(20px)',
+			},
+			boxShadow: {
+				'subtle': '0 4px 12px rgba(0, 0, 0, 0.05)',
+				'button': '0 1px 2px rgba(0, 0, 0, 0.05)',
+				'card': '0 4px 24px rgba(0, 0, 0, 0.05)',
+				'input': '0 2px 4px rgba(0, 0, 0, 0.05)',
+			},
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		require("tailwindcss-animate"),
+		function({ addUtilities }) {
+			const newUtilities = {
+				'.glass-morphism': {
+					'background': 'rgba(255, 255, 255, 0.7)',
+					'backdrop-filter': 'blur(10px)',
+					'border': '1px solid rgba(255, 255, 255, 0.2)',
+					'box-shadow': '0 8px 32px rgba(0, 0, 0, 0.05)',
+				},
+				'.glass-card': {
+					'background': 'rgba(255, 255, 255, 0.6)',
+					'backdrop-filter': 'blur(12px)',
+					'border-radius': '16px',
+					'border': '1px solid rgba(255, 255, 255, 0.3)',
+					'box-shadow': '0 4px 30px rgba(0, 0, 0, 0.03)',
+				},
+				'.text-shadow-sm': {
+					'text-shadow': '0 1px 2px rgba(0, 0, 0, 0.1)',
+				},
+				'.text-shadow': {
+					'text-shadow': '0 2px 4px rgba(0, 0, 0, 0.1)',
+				},
+				'.text-shadow-lg': {
+					'text-shadow': '0 4px 8px rgba(0, 0, 0, 0.1)',
+				},
+				'.transition-all-200': {
+					'transition': 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+				},
+				'.transition-all-300': {
+					'transition': 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+				},
+				'.transition-transform-200': {
+					'transition': 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+				},
+				'.transition-opacity-200': {
+					'transition': 'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+				},
+			}
+			addUtilities(newUtilities)
+		}
+	],
 } satisfies Config;
