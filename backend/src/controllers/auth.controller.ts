@@ -2,8 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { createMatch, storeOtp, verifyOtp, validateMatchAccess } from '../services/match.service';
 import { generateOTP } from '../utils/helpers';
-// In a real app, you would use a real email service
-// import { sendEmail } from '../services/email.service';
+import { sendOtpEmail } from '../services/email.service';
 
 /**
  * Create a new match with the scorer's email
@@ -26,12 +25,13 @@ export const createMatchHandler = async (
     // Store the OTP
     await storeOtp(scorerEmail, matchId, otp);
     
-    // In a real application, you would send an email with the OTP
-    // await sendEmail(scorerEmail, 'Your CricketOra Verification Code', 
-    //   `Your verification code is: ${otp}\nMatch ID: ${matchId}\nAccess Code: ${accessCode}`);
+    // Send email with OTP using nodemailer
+    await sendOtpEmail(scorerEmail, otp, matchId, accessCode);
     
-    // For development purposes, log the OTP
-    console.log(`OTP for ${scorerEmail}: ${otp}, Match ID: ${matchId}, Access Code: ${accessCode}`);
+    // For development purposes, also log the OTP
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`OTP for ${scorerEmail}: ${otp}, Match ID: ${matchId}, Access Code: ${accessCode}`);
+    }
     
     // Return the match ID
     res.status(201).json({
