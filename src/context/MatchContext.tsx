@@ -336,17 +336,157 @@ export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Deep clone to avoid direct state mutation
       const updatedMatch = JSON.parse(JSON.stringify(match)) as Match;
       
-      // Complex ball event processing would happen here
-      // For now, this is a simplified version
-      if (updatedMatch.innings.length === 0) {
-        throw new Error('No innings started');
+      // Get current innings
+      const currentInningsIndex = updatedMatch.currentInnings;
+      if (currentInningsIndex >= updatedMatch.innings.length) {
+        throw new Error('Invalid innings index');
       }
       
-      const currentInningsIndex = updatedMatch.currentInnings;
-      const currentInnings = updatedMatch.innings[currentInningsIndex];
+      const innings = updatedMatch.innings[currentInningsIndex];
       
-      // Process the ball event
-      // This would be much more complex in a real implementation
+      // Check if we need to create a new over
+      if (!innings.overs[innings.currentOver]) {
+        innings.overs[innings.currentOver] = {
+          number: innings.currentOver,
+          bowlerId: event.bowlerId,
+          balls: [],
+          isMaiden: true  // Will be updated as runs are scored
+        };
+      }
+      
+      // Add ball to current over
+      const currentOver = innings.overs[innings.currentOver];
+      currentOver.balls.push(event);
+      
+      // Update maiden status if runs scored (including extras)
+      if (event.runs > 0 || event.isWide || event.isNoBall) {
+        currentOver.isMaiden = false;
+      }
+      
+      // Update innings stats
+      // 1. Update total runs
+      const runsFromBall = event.runs;
+      const extrasRuns = (event.isWide || event.isNoBall) ? 1 : 0;
+      innings.totalRuns += runsFromBall + extrasRuns;
+      
+      // 2. Update extras
+      if (event.isWide) innings.extras.wides += 1 + runsFromBall;
+      if (event.isNoBall) innings.extras.noBalls += 1;
+      if (event.isBye) innings.extras.byes += runsFromBall;
+      if (event.isLegBye) innings.extras.legByes += runsFromBall;
+      
+      // 3. Update wickets
+      if (event.isWicket) {
+        innings.wickets += 1;
+        
+        // Update batsman stats to mark as out
+        if (event.dismissedPlayerId && innings.batsmanStats[event.dismissedPlayerId]) {
+          innings.batsmanStats[event.dismissedPlayerId].isOut = true;
+          innings.batsmanStats[event.dismissedPlayerId].dismissalType = event.dismissalType;
+          
+          // If the bowler is credited with the wicket
+          if (event.dismissalType && 
+              ['bowled', 'caught', 'lbw', 'stumped'].includes(event.dismissalType)) {
+            innings.batsmanStats[event.dismissedPlayerId].dismissedBy = event.bowlerId;
+            
+            // Update bowler stats
+            if (innings.bowlerStats[event.bowlerId]) {
+              innings.bowlerStats[event.bowlerId].wickets += 1;
+            }
+          }
+          
+          // If there's a fielder involved
+          if (event.fielderIds && event.fielderIds.length > 0) {
+            innings.batsmanStats[event.dismissedPlayerId].assistedBy = event.fielderIds[0];
+          }
+        }
+      }
+      
+      // 4. Update batsman stats (only if not a wide and the batsman actually faced the ball)
+      if (!event.isWide && event.batsmanId && innings.batsmanStats[event.batsmanId]) {
+        const batsmanStats = innings.batsmanStats[event.batsmanId];
+        
+        // Only count the ball for the batsman if it's not a wide
+        batsmanStats.balls += 1;
+        
+        // Only add runs to batsman if they're not extras
+        if (!event.isBye && !event.isLegBye) {
+          batsmanStats.runs += event.runs;
+          
+          // Update boundaries
+          if (event.runs === 4) batsmanStats.fours += 1;
+          if (event.runs === 6) batsmanStats.sixes += 1;
+        }
+      }
+      
+      // 5. Update bowler stats
+      if (event.bowlerId && innings.bowlerStats[event.bowlerId]) {
+        const bowlerStats = innings.bowlerStats[event.bowlerId];
+        
+        // Only count legal deliveries for overs bowled
+        if (!event.isWide && !event.isNoBall) {
+          bowlerStats.balls += 1;
+        }
+        
+        // Add runs conceded (including extras)
+        bowlerStats.runs += event.runs + (event.isWide || event.isNoBall ? 1 : 0);
+        
+        // Update maidens at the end of the over
+        if (innings.currentBall === 5 && currentOver.isMaiden) {
+          bowlerStats.maidens += 1;
+        }
+        
+        // Calculate completed overs
+        bowlerStats.overs = Math.floor(bowlerStats.balls / 6) + (bowlerStats.balls % 6) / 10;
+      }
+      
+      // 6. Update current ball and over counters
+      // Only legal deliveries count toward the over progression
+      if (!event.isWide && !event.isNoBall) {
+        innings.currentBall += 1;
+        
+        // If we've completed an over (6 balls)
+        if (innings.currentBall >= 6) {
+          innings.currentBall = 0;
+          innings.currentOver += 1;
+          
+          // If we've reached the maximum overs, mark innings as completed
+          if (innings.currentOver >= updatedMatch.totalOvers) {
+            innings.isCompleted = true;
+            
+            // If this is the first innings, set up the second innings
+            if (currentInningsIndex === 0 && updatedMatch.innings.length === 1) {
+              const firstInnings = updatedMatch.innings[0];
+              updatedMatch.innings.push({
+                battingTeamId: firstInnings.bowlingTeamId,
+                bowlingTeamId: firstInnings.battingTeamId,
+                overs: [],
+                currentOver: 0,
+                currentBall: 0,
+                totalRuns: 0,
+                wickets: 0,
+                extras: {
+                  wides: 0,
+                  noBalls: 0,
+                  byes: 0,
+                  legByes: 0,
+                  penalties: 0
+                },
+                batsmanStats: {},
+                bowlerStats: {},
+                currentBatsmen: ['', ''],
+                onStrike: '',
+                currentBowler: '',
+                isCompleted: false
+              });
+              updatedMatch.currentInnings = 1;
+            } else if (currentInningsIndex === 1) {
+              // If this is the second innings, the match is completed
+              updatedMatch.matchStatus = 'completed';
+            }
+          }
+        }
+      }
       
       // Update the match state
       updatedMatch.updatedAt = Date.now();
