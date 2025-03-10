@@ -28,12 +28,30 @@ import SelectBowlerModal from './SelectBowlerModal';
 import DismissalModal, { DismissalType } from './DismissalModal';
 import RunsInputModal, { RunsInfo } from './RunsInputModal';
 import ExtrasModal, { ExtrasInfo, ExtraType } from './ExtrasModal';
+import ScoreConfirmationModal, { ScoreDetails } from './ScoreConfirmationModal';
 import { useDisclosure } from '@/hooks/use-disclosure';
+import { useInningsInit } from '@/hooks/use-innings-init';
 
 const ScoringInterface = () => {
   const navigate = useNavigate();
   const { match, isLoading, saveMatchEvent, updateMatch } = useMatch();
   const [selectedRun, setSelectedRun] = useState<number | null>(null);
+  const [pendingBallEvent, setPendingBallEvent] = useState<Partial<BallEvent> | null>(null);
+  const [pendingScoreDetails, setPendingScoreDetails] = useState<ScoreDetails | null>(null);
+  const [noStrikeRotation, setNoStrikeRotation] = useState<boolean>(false);
+  
+  const {
+    needsInitialization,
+    strikerModal,
+    nonStrikerModal,
+    bowlerModal,
+    handleSelectStriker,
+    handleSelectNonStriker,
+    handleSelectBowler,
+    needsStriker,
+    needsNonStriker,
+    needsBowler,
+  } = useInningsInit();
   
   const {
     isOpen: isRunsModalOpen,
@@ -63,6 +81,12 @@ const ScoringInterface = () => {
     isOpen: isSelectBowlerModalOpen,
     onOpen: openSelectBowlerModal,
     onClose: closeSelectBowlerModal
+  } = useDisclosure();
+  
+  const {
+    isOpen: isScoreConfirmationOpen,
+    onOpen: openScoreConfirmation,
+    onClose: closeScoreConfirmation
   } = useDisclosure();
   
   useEffect(() => {
@@ -103,7 +127,19 @@ const ScoringInterface = () => {
         isWicket: false,
       };
       
-      processScoreUpdate(ballEvent);
+      setPendingBallEvent(ballEvent);
+      
+      const willRotateStrike = run % 2 === 1 || 
+        (currentInnings.currentBall === 5 && !ballEvent.isWide && !ballEvent.isNoBall);
+      
+      setPendingScoreDetails({
+        runs: run,
+        batsmanName: getBatsmanName(currentInnings.onStrike),
+        bowlerName: getBowlerName(currentInnings.currentBowler),
+        rotateStrike: willRotateStrike,
+      });
+      
+      openScoreConfirmation();
       
       setTimeout(() => setSelectedRun(null), 300);
     } else {
@@ -119,7 +155,17 @@ const ScoringInterface = () => {
       isWicket: false,
     };
     
-    processScoreUpdate(ballEvent, !runsInfo.isStrikeRotated);
+    setPendingBallEvent(ballEvent);
+    setNoStrikeRotation(!runsInfo.isStrikeRotated);
+    
+    setPendingScoreDetails({
+      runs: runsInfo.runs,
+      batsmanName: getBatsmanName(currentInnings.onStrike),
+      bowlerName: getBowlerName(currentInnings.currentBowler),
+      rotateStrike: runsInfo.isStrikeRotated,
+    });
+    
+    openScoreConfirmation();
   };
 
   const handleExtrasSubmit = (extrasInfo: ExtrasInfo) => {
@@ -145,7 +191,22 @@ const ScoringInterface = () => {
         break;
     }
 
-    processScoreUpdate(ballEvent, !extrasInfo.rotateStrike);
+    setPendingBallEvent(ballEvent);
+    setNoStrikeRotation(!extrasInfo.rotateStrike);
+    
+    setPendingScoreDetails({
+      runs: extrasInfo.runs,
+      isWide: ballEvent.isWide,
+      isNoBall: ballEvent.isNoBall,
+      isBye: ballEvent.isBye,
+      isLegBye: ballEvent.isLegBye,
+      isWicket: extrasInfo.isWicket,
+      batsmanName: getBatsmanName(currentInnings.onStrike),
+      bowlerName: getBowlerName(currentInnings.currentBowler),
+      rotateStrike: extrasInfo.rotateStrike,
+    });
+    
+    openScoreConfirmation();
   };
 
   const handleDismissalSubmit = (dismissalInfo: {
@@ -163,7 +224,18 @@ const ScoringInterface = () => {
       fielderIds: dismissalInfo.fielderIds,
     };
 
-    processScoreUpdate(ballEvent);
+    setPendingBallEvent(ballEvent);
+    
+    setPendingScoreDetails({
+      runs: 0,
+      isWicket: true,
+      dismissalType: dismissalInfo.dismissalType,
+      batsmanName: getBatsmanName(dismissalInfo.batsmanId),
+      bowlerName: getBowlerName(currentInnings.currentBowler),
+      rotateStrike: false,
+    });
+    
+    openScoreConfirmation();
   };
 
   const handleSwitchStrike = async () => {
@@ -290,6 +362,17 @@ const ScoringInterface = () => {
     }
   };
 
+  const confirmScoreSubmission = async () => {
+    if (!pendingBallEvent) return;
+    
+    await processScoreUpdate(pendingBallEvent, noStrikeRotation);
+    closeScoreConfirmation();
+    
+    setPendingBallEvent(null);
+    setPendingScoreDetails(null);
+    setNoStrikeRotation(false);
+  };
+
   const processScoreUpdate = async (ballEvent: Partial<BallEvent>, noStrikeRotation = false) => {
     if (!match) return;
 
@@ -402,6 +485,7 @@ const ScoringInterface = () => {
               onWicketClick={openDismissalModal}
               onCustomRunsClick={openRunsModal}
               onSwitchStrikeClick={handleSwitchStrike}
+              disabled={needsInitialization}
             />
           </div>
         </div>
@@ -448,6 +532,42 @@ const ScoringInterface = () => {
         onClose={closeSelectBowlerModal}
         availablePlayers={getAvailableBowlers()}
         currentBowler={currentInnings.currentBowler}
+        onSelect={handleSelectBowler}
+      />
+      
+      <ScoreConfirmationModal
+        open={isScoreConfirmationOpen}
+        onClose={closeScoreConfirmation}
+        onConfirm={confirmScoreSubmission}
+        scoreDetails={pendingScoreDetails || {runs: 0}}
+      />
+      
+      <SelectBatsmanModal 
+        open={strikerModal.isOpen}
+        onClose={strikerModal.onClose}
+        availablePlayers={battingTeam.players}
+        onSelect={handleSelectStriker}
+        title="Select Opening Batsman"
+        description="Choose a batsman to face the first ball"
+        selectForPosition="striker"
+      />
+      
+      <SelectBatsmanModal 
+        open={nonStrikerModal.isOpen}
+        onClose={nonStrikerModal.onClose}
+        availablePlayers={battingTeam.players.filter(
+          p => p.id !== currentInnings.currentBatsmen[0]
+        )}
+        onSelect={handleSelectNonStriker}
+        title="Select Non-Striker"
+        description="Choose a batsman for the non-striker's end"
+        selectForPosition="non-striker"
+      />
+      
+      <SelectBowlerModal 
+        open={bowlerModal.isOpen}
+        onClose={bowlerModal.onClose}
+        availablePlayers={bowlingTeam.players}
         onSelect={handleSelectBowler}
       />
     </div>
@@ -788,7 +908,8 @@ const ScoringButtons = ({
   onExtrasClick,
   onWicketClick,
   onCustomRunsClick,
-  onSwitchStrikeClick
+  onSwitchStrikeClick,
+  disabled = false
 }: {
   selectedRun: number | null;
   onRunSelect: (run: number) => void;
@@ -796,12 +917,22 @@ const ScoringButtons = ({
   onWicketClick: () => void;
   onCustomRunsClick: () => void;
   onSwitchStrikeClick: () => void;
+  disabled?: boolean;
 }) => {
   const runOptions = [0, 1, 2, 3, 4, 6];
   
   return (
-    <div className="space-y-4 mb-6">
+    <div className="space-y-4 mb-6 relative">
       <h3 className="text-sm font-medium text-muted-foreground">Scoring</h3>
+      
+      {disabled && (
+        <div className="absolute inset-0 bg-gray-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
+          <div className="text-center p-4">
+            <h3 className="text-lg font-medium mb-2">Innings Setup Required</h3>
+            <p className="text-muted-foreground">Please select batsmen and bowler to start the innings</p>
+          </div>
+        </div>
+      )}
       
       <div className="grid grid-cols-3 gap-3">
         {runOptions.map((run) => (
@@ -814,6 +945,7 @@ const ScoringButtons = ({
               run === 6 && "bg-emerald-100 border-emerald-300 text-emerald-700 hover:bg-emerald-200"
             )}
             onClick={() => onRunSelect(run)}
+            disabled={disabled}
           >
             {run}
           </Button>
@@ -825,6 +957,7 @@ const ScoringButtons = ({
           variant="outline"
           className="bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
           onClick={onExtrasClick}
+          disabled={disabled}
         >
           Extras
         </Button>
@@ -832,6 +965,7 @@ const ScoringButtons = ({
           variant="outline"
           className="h-auto py-2.5"
           onClick={onCustomRunsClick}
+          disabled={disabled}
         >
           Custom Runs
         </Button>
@@ -841,6 +975,7 @@ const ScoringButtons = ({
         variant="outline"
         className="w-full bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
         onClick={onWicketClick}
+        disabled={disabled}
       >
         Wicket
       </Button>
@@ -856,6 +991,7 @@ const ScoringButtons = ({
               description: "This feature is coming soon",
             });
           }}
+          disabled={disabled}
         >
           Edit Last Ball
         </Button>
@@ -864,6 +1000,7 @@ const ScoringButtons = ({
           size="sm"
           className="text-primary"
           onClick={onSwitchStrikeClick}
+          disabled={disabled}
         >
           Switch Strike
         </Button>
@@ -873,3 +1010,4 @@ const ScoringButtons = ({
 };
 
 export default ScoringInterface;
+
