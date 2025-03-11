@@ -47,7 +47,7 @@ const ScoringInterface = () => {
     bowlerModal,
     handleSelectStriker,
     handleSelectNonStriker,
-    handleSelectBowler,
+    handleSelectBowler: initHandleSelectBowler,
     needsStriker,
     needsNonStriker,
     needsBowler,
@@ -326,39 +326,43 @@ const ScoringInterface = () => {
   };
 
   const handleSelectBowler = async (playerId: string) => {
-    if (!match) return;
+    if (needsInitialization && needsBowler) {
+      initHandleSelectBowler(playerId);
+    } else {
+      if (!match) return;
 
-    try {
-      const updatedMatch = JSON.parse(JSON.stringify(match));
-      const currentInningsIndex = updatedMatch.currentInnings;
-      const innings = updatedMatch.innings[currentInningsIndex];
-      
-      innings.currentBowler = playerId;
-      
-      if (!innings.bowlerStats[playerId]) {
-        innings.bowlerStats[playerId] = {
-          playerId,
-          overs: 0,
-          balls: 0,
-          maidens: 0,
-          runs: 0,
-          wickets: 0
-        };
+      try {
+        const updatedMatch = JSON.parse(JSON.stringify(match));
+        const currentInningsIndex = updatedMatch.currentInnings;
+        const innings = updatedMatch.innings[currentInningsIndex];
+        
+        innings.currentBowler = playerId;
+        
+        if (!innings.bowlerStats[playerId]) {
+          innings.bowlerStats[playerId] = {
+            playerId,
+            overs: 0,
+            balls: 0,
+            maidens: 0,
+            runs: 0,
+            wickets: 0
+          };
+        }
+        
+        await updateMatch(updatedMatch);
+        
+        toast({
+          title: "Bowler Selected",
+          description: getBowlerName(playerId) + " is now bowling",
+        });
+      } catch (err) {
+        console.error("Error selecting bowler:", err);
+        toast({
+          title: "Error",
+          description: "Failed to select bowler",
+          variant: "destructive",
+        });
       }
-      
-      await updateMatch(updatedMatch);
-      
-      toast({
-        title: "Bowler Selected",
-        description: getBowlerName(playerId) + " is now bowling",
-      });
-    } catch (err) {
-      console.error("Error selecting bowler:", err);
-      toast({
-        title: "Error",
-        description: "Failed to select bowler",
-        variant: "destructive",
-      });
     }
   };
 
@@ -1010,4 +1014,3 @@ const ScoringButtons = ({
 };
 
 export default ScoringInterface;
-
