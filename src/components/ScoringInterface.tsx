@@ -17,7 +17,9 @@ import {
   Info,
   Edit,
   PlayCircle,
-  FastForward
+  FastForward,
+  History,
+  ArrowLeft
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -29,6 +31,8 @@ import DismissalModal, { DismissalType } from './DismissalModal';
 import RunsInputModal, { RunsInfo } from './RunsInputModal';
 import ExtrasModal, { ExtrasInfo, ExtraType } from './ExtrasModal';
 import ScoreConfirmationModal, { ScoreDetails } from './ScoreConfirmationModal';
+import EditBallModal from './EditBallModal';
+import OverHistoryModal from './OverHistoryModal';
 import { useDisclosure } from '@/hooks/use-disclosure';
 import { useInningsInit } from '@/hooks/use-innings-init';
 
@@ -39,6 +43,7 @@ const ScoringInterface = () => {
   const [pendingBallEvent, setPendingBallEvent] = useState<Partial<BallEvent> | null>(null);
   const [pendingScoreDetails, setPendingScoreDetails] = useState<ScoreDetails | null>(null);
   const [noStrikeRotation, setNoStrikeRotation] = useState<boolean>(false);
+  const [selectedBallToEdit, setSelectedBallToEdit] = useState<{overIndex: number, ballIndex: number} | null>(null);
   
   const {
     needsInitialization,
@@ -88,6 +93,18 @@ const ScoringInterface = () => {
     onOpen: openScoreConfirmation,
     onClose: closeScoreConfirmation
   } = useDisclosure();
+
+  const {
+    isOpen: isEditBallModalOpen,
+    onOpen: openEditBallModal,
+    onClose: closeEditBallModal
+  } = useDisclosure();
+
+  const {
+    isOpen: isOverHistoryModalOpen,
+    onOpen: openOverHistoryModal,
+    onClose: closeOverHistoryModal
+  } = useDisclosure();
   
   useEffect(() => {
     if (!match) {
@@ -101,7 +118,7 @@ const ScoringInterface = () => {
     }
     
     if (match.matchStatus === 'not_started' || match.innings.length === 0) {
-      navigate('/setup-match');
+      navigate('/setup');
       toast({
         title: "Match not set up",
         description: "Please complete match setup first",
@@ -269,13 +286,24 @@ const ScoringInterface = () => {
     }
   };
 
-  const handleSelectBatsman = async (playerId: string) => {
+  const handleSelectBatsman = async (playerId: string, playerName?: string) => {
     if (!match) return;
 
     try {
       const updatedMatch = JSON.parse(JSON.stringify(match));
       const currentInningsIndex = updatedMatch.currentInnings;
       const innings = updatedMatch.innings[currentInningsIndex];
+      
+      if (playerId === 'new_player' && playerName) {
+        const newPlayer: Player = {
+          id: `${battingTeam.id}_player_${battingTeam.players.length + 1}`,
+          name: playerName,
+          team: battingTeam.id === 'team1' ? 'team1' : 'team2'
+        };
+        
+        updatedMatch[battingTeam.id === 'team1' ? 'team1' : 'team2'].players.push(newPlayer);
+        playerId = newPlayer.id;
+      }
       
       if (!innings.currentBatsmen[0]) {
         innings.currentBatsmen[0] = playerId;
@@ -325,7 +353,7 @@ const ScoringInterface = () => {
     }
   };
 
-  const handleSelectBowler = async (playerId: string) => {
+  const handleSelectBowler = async (playerId: string, playerName?: string) => {
     if (needsInitialization && needsBowler) {
       initHandleSelectBowler(playerId);
     } else {
@@ -335,6 +363,17 @@ const ScoringInterface = () => {
         const updatedMatch = JSON.parse(JSON.stringify(match));
         const currentInningsIndex = updatedMatch.currentInnings;
         const innings = updatedMatch.innings[currentInningsIndex];
+        
+        if (playerId === 'new_player' && playerName) {
+          const newPlayer: Player = {
+            id: `${bowlingTeam.id}_player_${bowlingTeam.players.length + 1}`,
+            name: playerName,
+            team: bowlingTeam.id === 'team1' ? 'team1' : 'team2'
+          };
+          
+          updatedMatch[bowlingTeam.id === 'team1' ? 'team1' : 'team2'].players.push(newPlayer);
+          playerId = newPlayer.id;
+        }
         
         innings.currentBowler = playerId;
         
@@ -375,6 +414,12 @@ const ScoringInterface = () => {
     setPendingBallEvent(null);
     setPendingScoreDetails(null);
     setNoStrikeRotation(false);
+  };
+
+  const handleEditBall = (overIndex: number, ballIndex: number) => {
+    setSelectedBallToEdit({ overIndex, ballIndex });
+    openEditBallModal();
+    closeOverHistoryModal();
   };
 
   const processScoreUpdate = async (ballEvent: Partial<BallEvent>, noStrikeRotation = false) => {
@@ -470,6 +515,7 @@ const ScoringInterface = () => {
           <div className="flex-grow flex flex-col space-y-6">
             <CurrentOverDisplay 
               currentInnings={currentInnings}
+              onHistoryClick={openOverHistoryModal}
             />
             
             <BatsmenInfo 
@@ -529,6 +575,7 @@ const ScoringInterface = () => {
         onClose={closeSelectBatsmanModal}
         availablePlayers={getAvailableBatsmen()}
         onSelect={handleSelectBatsman}
+        allowAddPlayer={true}
       />
       
       <SelectBowlerModal 
@@ -537,6 +584,7 @@ const ScoringInterface = () => {
         availablePlayers={getAvailableBowlers()}
         currentBowler={currentInnings.currentBowler}
         onSelect={handleSelectBowler}
+        allowAddPlayer={true}
       />
       
       <ScoreConfirmationModal
@@ -554,6 +602,7 @@ const ScoringInterface = () => {
         title="Select Opening Batsman"
         description="Choose a batsman to face the first ball"
         selectForPosition="striker"
+        allowAddPlayer={true}
       />
       
       <SelectBatsmanModal 
@@ -566,6 +615,7 @@ const ScoringInterface = () => {
         title="Select Non-Striker"
         description="Choose a batsman for the non-striker's end"
         selectForPosition="non-striker"
+        allowAddPlayer={true}
       />
       
       <SelectBowlerModal 
@@ -573,12 +623,38 @@ const ScoringInterface = () => {
         onClose={bowlerModal.onClose}
         availablePlayers={bowlingTeam.players}
         onSelect={handleSelectBowler}
+        allowAddPlayer={true}
       />
+
+      <OverHistoryModal
+        open={isOverHistoryModalOpen}
+        onClose={closeOverHistoryModal}
+        overs={currentInnings.overs}
+        onEditBall={handleEditBall}
+      />
+      
+      {selectedBallToEdit && (
+        <EditBallModal
+          open={isEditBallModalOpen}
+          onClose={closeEditBallModal}
+          match={match}
+          overIndex={selectedBallToEdit.overIndex}
+          ballIndex={selectedBallToEdit.ballIndex}
+          onComplete={() => {
+            setSelectedBallToEdit(null);
+            toast({
+              title: "Ball updated",
+              description: "The ball has been updated successfully",
+            });
+          }}
+        />
+      )}
     </div>
   );
 };
 
 const ScoreHeader = ({ match }: { match: any }) => {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   return (
@@ -586,8 +662,18 @@ const ScoreHeader = ({ match }: { match: any }) => {
       <div className="container max-w-4xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Award className="h-5 w-5 text-primary mr-2" />
-            <span className="font-medium">CricketOra</span>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="mr-2"
+              onClick={() => navigate('/')}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex items-center">
+              <Award className="h-5 w-5 text-primary mr-2" />
+              <span className="font-medium">CricketOra</span>
+            </div>
           </div>
           
           <div className="flex items-center space-x-2">
@@ -611,6 +697,15 @@ const ScoreHeader = ({ match }: { match: any }) => {
                   <h3 className="text-lg font-medium">Match Menu</h3>
                   
                   <div className="space-y-2">
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={openOverHistoryModal}
+                    >
+                      <History className="h-4 w-4 mr-2" />
+                      View Over History
+                    </Button>
+                    
                     <Button 
                       variant="outline" 
                       className="w-full justify-start"
@@ -692,7 +787,13 @@ const ScoreSummary = ({
   );
 };
 
-const CurrentOverDisplay = ({ currentInnings }: { currentInnings: any }) => {
+const CurrentOverDisplay = ({ 
+  currentInnings,
+  onHistoryClick
+}: { 
+  currentInnings: any;
+  onHistoryClick: () => void;
+}) => {
   const getCurrentOverBalls = () => {
     if (!currentInnings.overs || currentInnings.overs.length === 0) {
       return [];
@@ -708,34 +809,78 @@ const CurrentOverDisplay = ({ currentInnings }: { currentInnings: any }) => {
   const currentOverBalls = getCurrentOverBalls();
   const emptyBallsCount = Math.max(0, 6 - currentOverBalls.length);
   
+  const renderBallContent = (ball: any) => {
+    const elements = [];
+    
+    if (ball.isWicket) elements.push('W');
+    if (ball.isWide) elements.push('Wd');
+    if (ball.isNoBall) elements.push('Nb');
+    if (ball.isBye) elements.push('B');
+    if (ball.isLegBye) elements.push('Lb');
+    if (ball.runs > 0) elements.push(ball.runs);
+    
+    return elements.join(',');
+  };
+  
+  const getBallClass = (ball: any) => {
+    return cn(
+      "h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium border flex-shrink-0",
+      ball.isWicket ? "bg-red-100 border-red-300 text-red-700" :
+      ball.isWide || ball.isNoBall ? "bg-amber-100 border-amber-300 text-amber-700" :
+      ball.isBye || ball.isLegBye ? "bg-indigo-100 border-indigo-300 text-indigo-700" :
+      ball.runs === 4 || ball.runs === 6 ? "bg-green-100 border-green-300 text-green-700" :
+      "bg-gray-100 border-gray-300 text-gray-700"
+    );
+  };
+  
   return (
     <div className="space-y-2">
-      <h3 className="text-sm font-medium text-muted-foreground">Current Over</h3>
+      <div className="flex justify-between items-center">
+        <h3 className="text-sm font-medium text-muted-foreground">Current Over</h3>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-7 px-2 text-xs"
+          onClick={onHistoryClick}
+        >
+          <History className="h-3.5 w-3.5 mr-1" />
+          History
+        </Button>
+      </div>
       <div className="flex space-x-2 overflow-x-auto pb-2">
-        {currentOverBalls.map((ball: any, index: number) => (
-          <div 
-            key={index}
-            className={cn(
-              "h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium border flex-shrink-0",
-              ball.isWicket ? "bg-red-100 border-red-300 text-red-700" :
-              ball.isWide || ball.isNoBall ? "bg-amber-100 border-amber-300 text-amber-700" :
-              ball.isBye || ball.isLegBye ? "bg-indigo-100 border-indigo-300 text-indigo-700" :
-              ball.runs === 4 || ball.runs === 6 ? "bg-green-100 border-green-300 text-green-700" :
-              "bg-gray-100 border-gray-300 text-gray-700"
-            )}
-          >
-            {ball.isWicket ? 'W' : 
-             ball.isWide ? 'Wd' :
-             ball.isNoBall ? 'Nb' :
-             ball.isBye ? 'B' :
-             ball.isLegBye ? 'Lb' :
-             ball.runs}
-          </div>
-        ))}
+        {currentOverBalls.map((ball: any, index: number) => {
+          const hasMultipleEvents = 
+            [ball.isWicket, ball.isWide, ball.isNoBall, ball.isBye, ball.isLegBye].filter(Boolean).length > 0 ||
+            (ball.isWide && ball.runs > 1) ||
+            (ball.isNoBall && ball.runs > 0);
+            
+          return (
+            <div 
+              key={index}
+              className={cn(getBallClass(ball), "relative")}
+            >
+              <div className="absolute -top-1 -left-1 bg-gray-200 rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
+                {index + 1}
+              </div>
+              {hasMultipleEvents ? (
+                <div className="text-[10px] leading-tight">{renderBallContent(ball)}</div>
+              ) : (
+                <div>
+                  {ball.isWicket ? 'W' : 
+                   ball.isWide ? 'Wd' :
+                   ball.isNoBall ? 'Nb' :
+                   ball.isBye ? 'B' :
+                   ball.isLegBye ? 'Lb' :
+                   ball.runs}
+                </div>
+              )}
+            </div>
+          );
+        })}
         {Array.from({ length: emptyBallsCount }).map((_, index) => (
           <div 
             key={`empty-${index}`}
-            className="h-8 w-8 rounded-full flex items-center justify-center text-sm border border-gray-200 text-gray-300 flex-shrink-0"
+            className="h-10 w-10 rounded-full flex items-center justify-center text-sm border border-gray-200 text-gray-300 flex-shrink-0"
           >
             •
           </div>
@@ -990,15 +1135,10 @@ const ScoringButtons = ({
           variant="outline"
           size="sm"
           className="text-muted-foreground"
-          onClick={() => {
-            toast({
-              title: "Edit Mode",
-              description: "This feature is coming soon",
-            });
-          }}
+          onClick={openOverHistoryModal}
           disabled={disabled}
         >
-          Edit Last Ball
+          Edit Ball
         </Button>
         <Button
           variant="outline"
@@ -1015,4 +1155,3 @@ const ScoringButtons = ({
 };
 
 export default ScoringInterface;
-

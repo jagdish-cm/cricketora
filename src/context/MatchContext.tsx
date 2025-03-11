@@ -131,9 +131,9 @@ const createTeamTemplate = (id: string, name: string, playersCount: number = 11)
   };
 };
 
-const createMatchTemplate = (scorerEmail: string): Match => {
-  const team1 = createTeamTemplate('team1', 'Team 1');
-  const team2 = createTeamTemplate('team2', 'Team 2');
+const createMatchTemplate = (scorerEmail: string, teamSize: number = 11): Match => {
+  const team1 = createTeamTemplate('team1', 'Team 1', teamSize);
+  const team2 = createTeamTemplate('team2', 'Team 2', teamSize);
   
   const matchId = generateMatchId();
   
@@ -200,8 +200,10 @@ export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         throw new Error('Scorer email is required');
       }
       
+      const teamSize = matchData.team1?.playersCount || 11;
+      
       const newMatch = {
-        ...createMatchTemplate(matchData.scorerEmail),
+        ...createMatchTemplate(matchData.scorerEmail, teamSize),
         ...matchData,
         createdAt: Date.now(),
         updatedAt: Date.now(),

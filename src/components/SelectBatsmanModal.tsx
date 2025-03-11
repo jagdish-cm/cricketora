@@ -22,9 +22,8 @@ interface SelectBatsmanModalProps {
   onSelect: (playerId: string, playerName?: string) => void;
   title?: string;
   description?: string;
-  selectForPosition?: 'striker' | 'non-striker';
+  selectForPosition?: 'striker' | 'non-striker' | undefined;
   allowAddPlayer?: boolean;
-  teamId?: string;
 }
 
 const SelectBatsmanModal = ({
@@ -33,10 +32,9 @@ const SelectBatsmanModal = ({
   availablePlayers,
   onSelect,
   title = "Select Batsman",
-  description = "Choose the next batsman to come to the crease",
+  description = "Choose a batsman to join the crease",
   selectForPosition,
-  allowAddPlayer = true,
-  teamId = ''
+  allowAddPlayer = false
 }: SelectBatsmanModalProps) => {
   const [selectedPlayer, setSelectedPlayer] = useState<string>("");
   const [isAddingPlayer, setIsAddingPlayer] = useState(false);
@@ -55,17 +53,11 @@ const SelectBatsmanModal = ({
     }
   };
   
-  const positionText = selectForPosition === 'striker' 
-    ? " (Striker)" 
-    : selectForPosition === 'non-striker' 
-      ? " (Non-striker)" 
-      : "";
-  
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{title}{positionText}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         
