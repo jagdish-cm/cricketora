@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { MatchProvider } from '@/context/MatchContext';
 import Index from './pages/Index';
 import NewMatch from './components/NewMatch';
+import EmailVerification from './components/EmailVerification';
 import MatchSetup from './components/MatchSetup';
 import ScoringInterface from './components/ScoringInterface';
 import WatchLive from './components/WatchLive';
@@ -28,6 +29,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/new-match" element={<NewMatch />} />
+            <Route path="/verify-email" element={<EmailVerification />} />
             <Route path="/setup" element={<MatchSetup />} />
             <Route path="/scoring" element={<ScoringInterface />} />
             <Route path="/watch/:matchId" element={<WatchLive />} />

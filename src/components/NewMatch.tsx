@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMatch } from '@/context/MatchContext';
@@ -27,7 +26,6 @@ const NewMatch = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate email
     if (!email) {
       setEmailError('Email is required');
       return;
@@ -41,21 +39,10 @@ const NewMatch = () => {
     setEmailError('');
 
     try {
-      // Create a new match with the scorer's email
       const matchId = await createMatch({ scorerEmail: email });
       
-      // In a real app, you would send an OTP to the user's email here
-      // For demo purposes, we'll simulate this with a delay
-      
-      toast({
-        title: "Verification Email Sent",
-        description: "Please check your inbox for a verification code",
-      });
-      
-      // Navigate to verification screen with the email and match ID
       navigate(`/verify-email?email=${encodeURIComponent(email)}&matchId=${matchId}`);
     } catch (err) {
-      // Error handling is done in the context
       console.error('Failed to start new match', err);
     }
   };
