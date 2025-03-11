@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { BallEvent } from '@/context/MatchContext';
+import { BallEvent, Match } from '@/context/MatchContext';
 import { toast } from '@/hooks/use-toast';
 import {
   Pencil,
@@ -21,17 +21,19 @@ import {
 interface EditBallModalProps {
   open: boolean;
   onClose: () => void;
-  ballEvents: BallEvent[];
-  onEditBall: (originalBall: BallEvent, updatedBall: Partial<BallEvent>) => void;
-  currentInningsIndex: number;
+  match: Match;
+  overIndex: number;
+  ballIndex: number;
+  onComplete: () => void;
 }
 
 const EditBallModal = ({
   open,
   onClose,
-  ballEvents,
-  onEditBall,
-  currentInningsIndex
+  match,
+  overIndex,
+  ballIndex,
+  onComplete
 }: EditBallModalProps) => {
   const [selectedBall, setSelectedBall] = useState<BallEvent | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -41,8 +43,17 @@ const EditBallModal = ({
     if (!open) {
       setSelectedBall(null);
       setIsEditing(false);
+    } else if (match) {
+      // Get the ball from the specified over and ball index
+      const currentInnings = match.innings[match.currentInnings];
+      if (currentInnings && currentInnings.overs[overIndex]) {
+        const ball = currentInnings.overs[overIndex].balls[ballIndex];
+        if (ball) {
+          setSelectedBall(ball);
+        }
+      }
     }
-  }, [open]);
+  }, [open, match, overIndex, ballIndex]);
   
   const formatBallNumber = (ball: BallEvent) => {
     return `${ball.overNumber}.${ball.ballNumber}`;
@@ -69,10 +80,6 @@ const EditBallModal = ({
     return parts.join(", ");
   };
   
-  const handleSelectBall = (ball: BallEvent) => {
-    setSelectedBall(ball);
-  };
-  
   const handleEditBall = () => {
     if (selectedBall) {
       setIsEditing(true);
@@ -85,14 +92,12 @@ const EditBallModal = ({
       });
       
       // For demonstration, let's just toggle the wide status
-      onEditBall(selectedBall, {
-        isWide: !selectedBall.isWide,
-        // In a real implementation, you would handle all fields here
-      });
+      // In a real implementation, you would handle all fields here
       
       setIsEditing(false);
       setSelectedBall(null);
       onClose();
+      onComplete();
     }
   };
   
@@ -100,46 +105,43 @@ const EditBallModal = ({
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Previous Balls</DialogTitle>
-          <DialogDescription>Select a ball to edit or view details</DialogDescription>
+          <DialogTitle>Edit Ball</DialogTitle>
+          <DialogDescription>View and edit ball details</DialogDescription>
         </DialogHeader>
         
-        <div className="py-4 max-h-[60vh] overflow-y-auto">
-          {ballEvents.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">No balls recorded yet</p>
-          ) : (
-            <div className="space-y-2">
-              {ballEvents.map((ball, index) => (
-                <div 
-                  key={`${ball.overNumber}.${ball.ballNumber}`}
-                  className={`p-3 border rounded-md cursor-pointer transition-colors ${
-                    selectedBall === ball ? 'border-primary bg-primary/5' : 'hover:bg-gray-50'
-                  }`}
-                  onClick={() => handleSelectBall(ball)}
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-2">
-                      <div className="bg-gray-100 text-xs font-medium px-2 py-1 rounded">
-                        {formatBallNumber(ball)}
-                      </div>
-                      <div className="text-sm">
-                        {getBallDescription(ball)}
-                      </div>
+        <div className="py-4">
+          {selectedBall ? (
+            <div className="space-y-4">
+              <div className="p-4 border rounded-md">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-2">
+                    <div className="bg-gray-100 text-xs font-medium px-2 py-1 rounded">
+                      {formatBallNumber(selectedBall)}
                     </div>
-                    {selectedBall === ball && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={handleEditBall}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <div className="text-sm">
+                      {getBallDescription(selectedBall)}
+                    </div>
                   </div>
                 </div>
-              ))}
+              </div>
+              
+              <div className="flex flex-col space-y-2">
+                <p className="text-sm font-medium">Ball Details:</p>
+                <ul className="text-sm space-y-1">
+                  <li>Over: {selectedBall.overNumber + 1}, Ball: {selectedBall.ballNumber + 1}</li>
+                  <li>Runs: {selectedBall.runs}</li>
+                  {selectedBall.isWide && <li>Wide: Yes</li>}
+                  {selectedBall.isNoBall && <li>No Ball: Yes</li>}
+                  {selectedBall.isBye && <li>Bye: Yes</li>}
+                  {selectedBall.isLegBye && <li>Leg Bye: Yes</li>}
+                  {selectedBall.isWicket && (
+                    <li>Wicket: {selectedBall.dismissalType || "Unknown"}</li>
+                  )}
+                </ul>
+              </div>
             </div>
+          ) : (
+            <p className="text-center text-muted-foreground py-4">No ball data found</p>
           )}
         </div>
         
@@ -147,7 +149,7 @@ const EditBallModal = ({
           <Button variant="outline" onClick={onClose}>Close</Button>
           {selectedBall && (
             <Button onClick={handleEditBall} disabled={isEditing}>
-              Edit Selected
+              Edit Ball
             </Button>
           )}
         </DialogFooter>

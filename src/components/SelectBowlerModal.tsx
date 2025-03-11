@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { UserRoundPlus, UserRound } from 'lucide-react';
+import { UserRoundPlus } from 'lucide-react';
 
 interface SelectBowlerModalProps {
   open: boolean;
@@ -22,9 +22,8 @@ interface SelectBowlerModalProps {
   onSelect: (playerId: string, playerName?: string) => void;
   title?: string;
   description?: string;
-  allowAddPlayer?: boolean;
-  teamId?: string;
   currentBowler?: string;
+  allowAddPlayer?: boolean;
 }
 
 const SelectBowlerModal = ({
@@ -34,15 +33,14 @@ const SelectBowlerModal = ({
   onSelect,
   title = "Select Bowler",
   description = "Choose a bowler for this over",
-  allowAddPlayer = true,
-  teamId = '',
-  currentBowler = ''
+  currentBowler,
+  allowAddPlayer = false
 }: SelectBowlerModalProps) => {
   const [selectedPlayer, setSelectedPlayer] = useState<string>("");
   const [isAddingPlayer, setIsAddingPlayer] = useState(false);
   const [newPlayerName, setNewPlayerName] = useState("");
   
-  // Set the selected player to the current bowler when the modal opens
+  // Set the current bowler as selected when the modal opens
   useEffect(() => {
     if (open && currentBowler) {
       setSelectedPlayer(currentBowler);

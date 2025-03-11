@@ -498,7 +498,7 @@ const ScoringInterface = () => {
   
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-white">
-      <ScoreHeader match={match} />
+      <ScoreHeader match={match} openOverHistoryModal={openOverHistoryModal} />
       
       <PageTransition className="flex-grow flex flex-col max-w-full">
         <div className="container max-w-4xl mx-auto px-4 py-6 flex-grow flex flex-col">
@@ -535,6 +535,7 @@ const ScoringInterface = () => {
               onWicketClick={openDismissalModal}
               onCustomRunsClick={openRunsModal}
               onSwitchStrikeClick={handleSwitchStrike}
+              onOverHistoryClick={openOverHistoryModal}
               disabled={needsInitialization}
             />
           </div>
@@ -653,7 +654,7 @@ const ScoringInterface = () => {
   );
 };
 
-const ScoreHeader = ({ match }: { match: any }) => {
+const ScoreHeader = ({ match, openOverHistoryModal }: { match: any, openOverHistoryModal: () => void }) => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
@@ -1059,6 +1060,7 @@ const ScoringButtons = ({
   onWicketClick,
   onCustomRunsClick,
   onSwitchStrikeClick,
+  onOverHistoryClick,
   disabled = false
 }: {
   selectedRun: number | null;
@@ -1067,6 +1069,7 @@ const ScoringButtons = ({
   onWicketClick: () => void;
   onCustomRunsClick: () => void;
   onSwitchStrikeClick: () => void;
+  onOverHistoryClick: () => void;
   disabled?: boolean;
 }) => {
   const runOptions = [0, 1, 2, 3, 4, 6];
@@ -1135,7 +1138,7 @@ const ScoringButtons = ({
           variant="outline"
           size="sm"
           className="text-muted-foreground"
-          onClick={openOverHistoryModal}
+          onClick={onOverHistoryClick}
           disabled={disabled}
         >
           Edit Ball
@@ -1155,3 +1158,4 @@ const ScoringButtons = ({
 };
 
 export default ScoringInterface;
+
