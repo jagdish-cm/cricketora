@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
 
@@ -12,6 +11,7 @@ export interface Team {
   id: string;
   name: string;
   players: Player[];
+  playersCount: number;
 }
 
 export interface BatsmanStats {
@@ -116,21 +116,21 @@ interface MatchContextType {
   clearMatch: () => void;
 }
 
-// Create the context with a default value
 const MatchContext = createContext<MatchContextType | undefined>(undefined);
 
-// Sample team for demo
-const createTeamTemplate = (id: string, name: string): Team => ({
-  id,
-  name,
-  players: Array(11).fill(null).map((_, index) => ({
-    id: `${id}_player_${index + 1}`,
-    name: `Player ${index + 1}`,
-    team: id === 'team1' ? 'team1' : 'team2'
-  }))
-});
+const createTeamTemplate = (id: string, name: string, playersCount: number = 11): Team => {
+  return {
+    id,
+    name,
+    playersCount,
+    players: Array(playersCount).fill(null).map((_, index) => ({
+      id: `${id}_player_${index + 1}`,
+      name: `Player ${index + 1}`,
+      team: id === 'team1' ? 'team1' : 'team2'
+    }))
+  };
+};
 
-// Create match default template
 const createMatchTemplate = (scorerEmail: string): Match => {
   const team1 = createTeamTemplate('team1', 'Team 1');
   const team2 = createTeamTemplate('team2', 'Team 2');
@@ -159,9 +159,8 @@ const createMatchTemplate = (scorerEmail: string): Match => {
   };
 };
 
-// Generate a unique match ID
 const generateMatchId = (): string => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Removed similar looking characters
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let result = '';
   for (let i = 0; i < 6; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -169,13 +168,11 @@ const generateMatchId = (): string => {
   return result;
 };
 
-// The Provider component
 export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [match, setMatch] = useState<Match | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load match from local storage on startup
   useEffect(() => {
     const storedMatch = localStorage.getItem('cricketora_current_match');
     if (storedMatch) {
@@ -188,14 +185,12 @@ export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
-  // Save match to local storage when it changes
   useEffect(() => {
     if (match) {
       localStorage.setItem('cricketora_current_match', JSON.stringify(match));
     }
   }, [match]);
 
-  // Create a new match
   const createMatch = useCallback(async (matchData: Partial<Match>): Promise<string> => {
     setIsLoading(true);
     setError(null);
@@ -212,13 +207,10 @@ export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         updatedAt: Date.now(),
       };
       
-      // In a real app, you would send this to an API
-      // For now, we'll just simulate a delay and store locally
       await new Promise(resolve => setTimeout(resolve, 500));
       
       setMatch(newMatch);
       
-      // Save to local matches database
       const allMatches = JSON.parse(localStorage.getItem('cricketora_matches') || '{}');
       allMatches[newMatch.id] = newMatch;
       localStorage.setItem('cricketora_matches', JSON.stringify(allMatches));
@@ -242,14 +234,11 @@ export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
-  // Load a match by ID
   const loadMatch = useCallback(async (matchId: string, accessCode?: string): Promise<void> => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // In a real app, you would fetch this from an API
-      // For now, we'll just simulate a delay and load from local storage
       await new Promise(resolve => setTimeout(resolve, 500));
       
       const allMatches = JSON.parse(localStorage.getItem('cricketora_matches') || '{}');
@@ -258,11 +247,6 @@ export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (!loadedMatch) {
         throw new Error('Match not found');
       }
-      
-      // In a real implementation, you would verify the access code here
-      // if (accessCode && loadedMatch.accessCode !== accessCode) {
-      //   throw new Error('Invalid access code');
-      // }
       
       setMatch(loadedMatch);
       
@@ -283,7 +267,6 @@ export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
-  // Update match details
   const updateMatch = useCallback(async (matchData: Partial<Match>): Promise<void> => {
     setIsLoading(true);
     setError(null);
@@ -299,13 +282,10 @@ export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         updatedAt: Date.now(),
       };
       
-      // In a real app, you would send this to an API
-      // For now, we'll just simulate a delay and update locally
       await new Promise(resolve => setTimeout(resolve, 300));
       
       setMatch(updatedMatch);
       
-      // Update in local matches database
       const allMatches = JSON.parse(localStorage.getItem('cricketora_matches') || '{}');
       allMatches[updatedMatch.id] = updatedMatch;
       localStorage.setItem('cricketora_matches', JSON.stringify(allMatches));
@@ -323,7 +303,6 @@ export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [match]);
 
-  // Save a ball event
   const saveMatchEvent = useCallback(async (event: BallEvent): Promise<void> => {
     setIsLoading(true);
     setError(null);
@@ -333,10 +312,8 @@ export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         throw new Error('No match loaded');
       }
       
-      // Deep clone to avoid direct state mutation
       const updatedMatch = JSON.parse(JSON.stringify(match)) as Match;
       
-      // Get current innings
       const currentInningsIndex = updatedMatch.currentInnings;
       if (currentInningsIndex >= updatedMatch.innings.length) {
         throw new Error('Invalid innings index');
@@ -344,117 +321,92 @@ export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       
       const innings = updatedMatch.innings[currentInningsIndex];
       
-      // Check if we need to create a new over
       if (!innings.overs[innings.currentOver]) {
         innings.overs[innings.currentOver] = {
           number: innings.currentOver,
           bowlerId: event.bowlerId,
           balls: [],
-          isMaiden: true  // Will be updated as runs are scored
+          isMaiden: true
         };
       }
       
-      // Add ball to current over
       const currentOver = innings.overs[innings.currentOver];
       currentOver.balls.push(event);
       
-      // Update maiden status if runs scored (including extras)
       if (event.runs > 0 || event.isWide || event.isNoBall) {
         currentOver.isMaiden = false;
       }
       
-      // Update innings stats
-      // 1. Update total runs
       const runsFromBall = event.runs;
       const extrasRuns = (event.isWide || event.isNoBall) ? 1 : 0;
       innings.totalRuns += runsFromBall + extrasRuns;
       
-      // 2. Update extras
       if (event.isWide) innings.extras.wides += 1 + runsFromBall;
       if (event.isNoBall) innings.extras.noBalls += 1;
       if (event.isBye) innings.extras.byes += runsFromBall;
       if (event.isLegBye) innings.extras.legByes += runsFromBall;
       
-      // 3. Update wickets
       if (event.isWicket) {
         innings.wickets += 1;
         
-        // Update batsman stats to mark as out
         if (event.dismissedPlayerId && innings.batsmanStats[event.dismissedPlayerId]) {
           innings.batsmanStats[event.dismissedPlayerId].isOut = true;
           innings.batsmanStats[event.dismissedPlayerId].dismissalType = event.dismissalType;
           
-          // If the bowler is credited with the wicket
           if (event.dismissalType && 
               ['bowled', 'caught', 'lbw', 'stumped'].includes(event.dismissalType)) {
             innings.batsmanStats[event.dismissedPlayerId].dismissedBy = event.bowlerId;
             
-            // Update bowler stats
             if (innings.bowlerStats[event.bowlerId]) {
               innings.bowlerStats[event.bowlerId].wickets += 1;
             }
           }
           
-          // If there's a fielder involved
           if (event.fielderIds && event.fielderIds.length > 0) {
             innings.batsmanStats[event.dismissedPlayerId].assistedBy = event.fielderIds[0];
           }
         }
       }
       
-      // 4. Update batsman stats (only if not a wide and the batsman actually faced the ball)
       if (!event.isWide && event.batsmanId && innings.batsmanStats[event.batsmanId]) {
         const batsmanStats = innings.batsmanStats[event.batsmanId];
         
-        // Only count the ball for the batsman if it's not a wide
         batsmanStats.balls += 1;
         
-        // Only add runs to batsman if they're not extras
         if (!event.isBye && !event.isLegBye) {
           batsmanStats.runs += event.runs;
           
-          // Update boundaries
           if (event.runs === 4) batsmanStats.fours += 1;
           if (event.runs === 6) batsmanStats.sixes += 1;
         }
       }
       
-      // 5. Update bowler stats
       if (event.bowlerId && innings.bowlerStats[event.bowlerId]) {
         const bowlerStats = innings.bowlerStats[event.bowlerId];
         
-        // Only count legal deliveries for overs bowled
         if (!event.isWide && !event.isNoBall) {
           bowlerStats.balls += 1;
         }
         
-        // Add runs conceded (including extras)
         bowlerStats.runs += event.runs + (event.isWide || event.isNoBall ? 1 : 0);
         
-        // Update maidens at the end of the over
         if (innings.currentBall === 5 && currentOver.isMaiden) {
           bowlerStats.maidens += 1;
         }
         
-        // Calculate completed overs
         bowlerStats.overs = Math.floor(bowlerStats.balls / 6) + (bowlerStats.balls % 6) / 10;
       }
       
-      // 6. Update current ball and over counters
-      // Only legal deliveries count toward the over progression
       if (!event.isWide && !event.isNoBall) {
         innings.currentBall += 1;
         
-        // If we've completed an over (6 balls)
         if (innings.currentBall >= 6) {
           innings.currentBall = 0;
           innings.currentOver += 1;
           
-          // If we've reached the maximum overs, mark innings as completed
           if (innings.currentOver >= updatedMatch.totalOvers) {
             innings.isCompleted = true;
             
-            // If this is the first innings, set up the second innings
             if (currentInningsIndex === 0 && updatedMatch.innings.length === 1) {
               const firstInnings = updatedMatch.innings[0];
               updatedMatch.innings.push({
@@ -481,23 +433,18 @@ export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               });
               updatedMatch.currentInnings = 1;
             } else if (currentInningsIndex === 1) {
-              // If this is the second innings, the match is completed
               updatedMatch.matchStatus = 'completed';
             }
           }
         }
       }
       
-      // Update the match state
       updatedMatch.updatedAt = Date.now();
       
-      // In a real app, you would send this to an API
-      // For now, we'll just simulate a delay and update locally
       await new Promise(resolve => setTimeout(resolve, 200));
       
       setMatch(updatedMatch);
       
-      // Update in local matches database
       const allMatches = JSON.parse(localStorage.getItem('cricketora_matches') || '{}');
       allMatches[updatedMatch.id] = updatedMatch;
       localStorage.setItem('cricketora_matches', JSON.stringify(allMatches));
@@ -515,7 +462,6 @@ export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [match]);
 
-  // Clear the current match
   const clearMatch = useCallback(() => {
     setMatch(null);
     localStorage.removeItem('cricketora_current_match');
@@ -539,7 +485,6 @@ export const MatchProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
-// Custom hook to use the match context
 export const useMatch = () => {
   const context = useContext(MatchContext);
   if (context === undefined) {

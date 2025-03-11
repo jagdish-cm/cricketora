@@ -12,15 +12,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { UserRoundPlus, UserRound } from 'lucide-react';
 
 interface SelectBatsmanModalProps {
   open: boolean;
   onClose: () => void;
   availablePlayers: Player[];
-  onSelect: (playerId: string) => void;
+  onSelect: (playerId: string, playerName?: string) => void;
   title?: string;
   description?: string;
   selectForPosition?: 'striker' | 'non-striker';
+  allowAddPlayer?: boolean;
+  teamId?: string;
 }
 
 const SelectBatsmanModal = ({
@@ -30,12 +34,21 @@ const SelectBatsmanModal = ({
   onSelect,
   title = "Select Batsman",
   description = "Choose the next batsman to come to the crease",
-  selectForPosition
+  selectForPosition,
+  allowAddPlayer = true,
+  teamId = ''
 }: SelectBatsmanModalProps) => {
   const [selectedPlayer, setSelectedPlayer] = useState<string>("");
+  const [isAddingPlayer, setIsAddingPlayer] = useState(false);
+  const [newPlayerName, setNewPlayerName] = useState("");
   
   const handleSubmit = () => {
-    if (selectedPlayer) {
+    if (isAddingPlayer && newPlayerName.trim()) {
+      onSelect('new_player', newPlayerName.trim());
+      setNewPlayerName("");
+      setIsAddingPlayer(false);
+      onClose();
+    } else if (selectedPlayer) {
       onSelect(selectedPlayer);
       setSelectedPlayer("");
       onClose();
@@ -57,19 +70,55 @@ const SelectBatsmanModal = ({
         </DialogHeader>
         
         <div className="py-4">
-          <RadioGroup value={selectedPlayer} onValueChange={setSelectedPlayer}>
-            {availablePlayers.map((player) => (
-              <div key={player.id} className="flex items-center space-x-2 py-2">
-                <RadioGroupItem value={player.id} id={player.id} />
-                <Label htmlFor={player.id} className="flex-grow cursor-pointer">
-                  {player.name}
-                </Label>
+          {!isAddingPlayer ? (
+            <>
+              <RadioGroup value={selectedPlayer} onValueChange={setSelectedPlayer}>
+                {availablePlayers.map((player) => (
+                  <div key={player.id} className="flex items-center space-x-2 py-2">
+                    <RadioGroupItem value={player.id} id={player.id} />
+                    <Label htmlFor={player.id} className="flex-grow cursor-pointer">
+                      {player.name}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+              
+              {availablePlayers.length === 0 && (
+                <p className="text-muted-foreground text-center py-4">No available players</p>
+              )}
+              
+              {allowAddPlayer && (
+                <Button 
+                  variant="outline" 
+                  className="w-full mt-4 flex items-center justify-center"
+                  onClick={() => setIsAddingPlayer(true)}
+                >
+                  <UserRoundPlus className="h-4 w-4 mr-2" />
+                  Add New Player
+                </Button>
+              )}
+            </>
+          ) : (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="newPlayerName">Player Name</Label>
+                <Input
+                  id="newPlayerName"
+                  value={newPlayerName}
+                  onChange={(e) => setNewPlayerName(e.target.value)}
+                  placeholder="Enter player name"
+                  autoFocus
+                />
               </div>
-            ))}
-          </RadioGroup>
-          
-          {availablePlayers.length === 0 && (
-            <p className="text-muted-foreground text-center py-4">No available players</p>
+              
+              <Button 
+                variant="outline" 
+                className="w-full flex items-center justify-center"
+                onClick={() => setIsAddingPlayer(false)}
+              >
+                Back to Player List
+              </Button>
+            </div>
           )}
         </div>
         
@@ -77,7 +126,7 @@ const SelectBatsmanModal = ({
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button 
             onClick={handleSubmit} 
-            disabled={!selectedPlayer || availablePlayers.length === 0}
+            disabled={(!selectedPlayer && !isAddingPlayer) || (isAddingPlayer && !newPlayerName.trim())}
           >
             Confirm
           </Button>

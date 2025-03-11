@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMatch } from '@/context/MatchContext';
+import { useMatch, Player } from '@/context/MatchContext';
 import { 
   PageTransition, 
   SectionTitle, 
@@ -19,7 +20,10 @@ import {
   Copy, 
   Check,
   Dice5,
-  CopyCheck
+  CopyCheck,
+  UserRoundPlus,
+  UserRound,
+  Trash2
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from '@/hooks/use-toast';
@@ -27,6 +31,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const MatchSetup = () => {
   const navigate = useNavigate();
@@ -139,6 +144,66 @@ const TeamSetup = ({
   const [team1Error, setTeam1Error] = useState('');
   const [team2Error, setTeam2Error] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [team1Players, setTeam1Players] = useState<Player[]>(match.team1.players || []);
+  const [team2Players, setTeam2Players] = useState<Player[]>(match.team2.players || []);
+  const [team1PlayersCount, setTeam1PlayersCount] = useState(match.team1.playersCount || 11);
+  const [team2PlayersCount, setTeam2PlayersCount] = useState(match.team2.playersCount || 11);
+  
+  const updatePlayerName = (teamId: 'team1' | 'team2', index: number, name: string) => {
+    if (teamId === 'team1') {
+      const newPlayers = [...team1Players];
+      newPlayers[index] = { ...newPlayers[index], name };
+      setTeam1Players(newPlayers);
+    } else {
+      const newPlayers = [...team2Players];
+      newPlayers[index] = { ...newPlayers[index], name };
+      setTeam2Players(newPlayers);
+    }
+  };
+  
+  const handlePlayersCountChange = (teamId: 'team1' | 'team2', count: number) => {
+    const validCount = Math.min(Math.max(count, 1), 20); // Limit between 1-20 players
+    
+    if (teamId === 'team1') {
+      setTeam1PlayersCount(validCount);
+      
+      // Update players array to match the new count
+      if (validCount > team1Players.length) {
+        // Add new players
+        const newPlayers = [...team1Players];
+        for (let i = team1Players.length; i < validCount; i++) {
+          newPlayers.push({
+            id: `team1_player_${i + 1}`,
+            name: `Player ${i + 1}`,
+            team: 'team1'
+          });
+        }
+        setTeam1Players(newPlayers);
+      } else if (validCount < team1Players.length) {
+        // Remove excess players
+        setTeam1Players(team1Players.slice(0, validCount));
+      }
+    } else {
+      setTeam2PlayersCount(validCount);
+      
+      // Update players array to match the new count
+      if (validCount > team2Players.length) {
+        // Add new players
+        const newPlayers = [...team2Players];
+        for (let i = team2Players.length; i < validCount; i++) {
+          newPlayers.push({
+            id: `team2_player_${i + 1}`,
+            name: `Player ${i + 1}`,
+            team: 'team2'
+          });
+        }
+        setTeam2Players(newPlayers);
+      } else if (validCount < team2Players.length) {
+        // Remove excess players
+        setTeam2Players(team2Players.slice(0, validCount));
+      }
+    }
+  };
   
   const handleSaveTeams = async () => {
     let hasError = false;
@@ -171,22 +236,26 @@ const TeamSetup = ({
       await updateMatch({
         team1: {
           ...match.team1,
-          name: team1Name.trim()
+          name: team1Name.trim(),
+          playersCount: team1PlayersCount,
+          players: team1Players
         },
         team2: {
           ...match.team2,
-          name: team2Name.trim()
+          name: team2Name.trim(),
+          playersCount: team2PlayersCount,
+          players: team2Players
         }
       });
       
       toast({
         title: "Teams saved",
-        description: "Team names have been updated",
+        description: "Team details have been updated",
       });
       
       onNext();
     } catch (err) {
-      console.error('Failed to save team names', err);
+      console.error('Failed to save team details', err);
     } finally {
       setIsSaving(false);
     }
@@ -207,11 +276,45 @@ const TeamSetup = ({
             disabled={isSaving}
           />
           
-          <div className="mt-2 opacity-60">
-            <p className="text-xs text-muted-foreground">
-              Player entry will be available in a future update.
-            </p>
+          <div className="flex items-center gap-4 mt-4">
+            <Label htmlFor="team1PlayersCount" className="min-w-24">Number of Players:</Label>
+            <Input
+              id="team1PlayersCount"
+              type="number"
+              min={1}
+              max={20}
+              value={team1PlayersCount}
+              onChange={(e) => handlePlayersCountChange('team1', parseInt(e.target.value))}
+              className="w-20"
+              disabled={isSaving}
+            />
           </div>
+          
+          <Accordion type="single" collapsible className="mt-2">
+            <AccordionItem value="players">
+              <AccordionTrigger className="text-sm font-medium">
+                <div className="flex items-center gap-2">
+                  <UserRound className="h-4 w-4" />
+                  <span>Edit Player Names (Optional)</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-2 mt-2">
+                  {team1Players.map((player, index) => (
+                    <div key={player.id} className="flex items-center gap-2">
+                      <Input
+                        value={player.name}
+                        onChange={(e) => updatePlayerName('team1', index, e.target.value)}
+                        placeholder={`Player ${index + 1}`}
+                        className="text-sm"
+                        disabled={isSaving}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
         
         <div className="space-y-4">
@@ -226,11 +329,45 @@ const TeamSetup = ({
             disabled={isSaving}
           />
           
-          <div className="mt-2 opacity-60">
-            <p className="text-xs text-muted-foreground">
-              Player entry will be available in a future update.
-            </p>
+          <div className="flex items-center gap-4 mt-4">
+            <Label htmlFor="team2PlayersCount" className="min-w-24">Number of Players:</Label>
+            <Input
+              id="team2PlayersCount"
+              type="number"
+              min={1}
+              max={20}
+              value={team2PlayersCount}
+              onChange={(e) => handlePlayersCountChange('team2', parseInt(e.target.value))}
+              className="w-20"
+              disabled={isSaving}
+            />
           </div>
+          
+          <Accordion type="single" collapsible className="mt-2">
+            <AccordionItem value="players">
+              <AccordionTrigger className="text-sm font-medium">
+                <div className="flex items-center gap-2">
+                  <UserRound className="h-4 w-4" />
+                  <span>Edit Player Names (Optional)</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-2 mt-2">
+                  {team2Players.map((player, index) => (
+                    <div key={player.id} className="flex items-center gap-2">
+                      <Input
+                        value={player.name}
+                        onChange={(e) => updatePlayerName('team2', index, e.target.value)}
+                        placeholder={`Player ${index + 1}`}
+                        className="text-sm"
+                        disabled={isSaving}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       </div>
       
