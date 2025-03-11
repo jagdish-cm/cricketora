@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Player } from '@/context/MatchContext';
 import {
   Dialog,
@@ -24,6 +24,7 @@ interface SelectBowlerModalProps {
   description?: string;
   allowAddPlayer?: boolean;
   teamId?: string;
+  currentBowler?: string;
 }
 
 const SelectBowlerModal = ({
@@ -34,11 +35,21 @@ const SelectBowlerModal = ({
   title = "Select Bowler",
   description = "Choose a bowler for this over",
   allowAddPlayer = true,
-  teamId = ''
+  teamId = '',
+  currentBowler = ''
 }: SelectBowlerModalProps) => {
   const [selectedPlayer, setSelectedPlayer] = useState<string>("");
   const [isAddingPlayer, setIsAddingPlayer] = useState(false);
   const [newPlayerName, setNewPlayerName] = useState("");
+  
+  // Set the selected player to the current bowler when the modal opens
+  useEffect(() => {
+    if (open && currentBowler) {
+      setSelectedPlayer(currentBowler);
+    } else if (open) {
+      setSelectedPlayer("");
+    }
+  }, [open, currentBowler]);
   
   const handleSubmit = () => {
     if (isAddingPlayer && newPlayerName.trim()) {
