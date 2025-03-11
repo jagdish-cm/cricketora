@@ -706,6 +706,7 @@ const CurrentOverDisplay = ({ currentInnings }: { currentInnings: any }) => {
   };
   
   const currentOverBalls = getCurrentOverBalls();
+  const emptyBallsCount = Math.max(0, 6 - currentOverBalls.length);
   
   return (
     <div className="space-y-2">
@@ -731,7 +732,7 @@ const CurrentOverDisplay = ({ currentInnings }: { currentInnings: any }) => {
              ball.runs}
           </div>
         ))}
-        {Array(6 - currentOverBalls.length).fill(0).map((_, index) => (
+        {Array.from({ length: emptyBallsCount }).map((_, index) => (
           <div 
             key={`empty-${index}`}
             className="h-8 w-8 rounded-full flex items-center justify-center text-sm border border-gray-200 text-gray-300 flex-shrink-0"
@@ -1014,3 +1015,4 @@ const ScoringButtons = ({
 };
 
 export default ScoringInterface;
+
