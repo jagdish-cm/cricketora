@@ -88,6 +88,6 @@ const Index = () => {
       </div>
     </PageContainer>
   );
-};
+}
 
 export default Index;

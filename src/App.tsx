@@ -4,6 +4,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from "@/components/ui/toaster";
 import { MatchProvider } from '@/context/MatchContext';
 import Index from './pages/Index';
+import NewMatch from './components/NewMatch';
 import MatchSetup from './components/MatchSetup';
 import ScoringInterface from './components/ScoringInterface';
 import WatchLive from './components/WatchLive';
@@ -26,6 +27,7 @@ function App() {
         <main className="flex-1 container mx-auto px-4 py-6">
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/new-match" element={<NewMatch />} />
             <Route path="/setup" element={<MatchSetup />} />
             <Route path="/scoring" element={<ScoringInterface />} />
             <Route path="/watch/:matchId" element={<WatchLive />} />
