@@ -4,6 +4,8 @@ body {
   padding: 0;
   min-height: 100vh;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 #root {
@@ -23,13 +25,17 @@ html {
   width: 100%;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
 }
 
 /* Make sure buttons have consistent height */
 button {
   line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  touch-action: manipulation;
 }
 
 /* Prevent images from overflowing */
@@ -41,8 +47,30 @@ img {
 /* Fix responsive layout issues */
 @media (max-width: 640px) {
   .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  /* Smaller text for mobile */
+  body {
+    font-size: 14px;
+  }
+  
+  /* Adjust button padding on mobile */
+  button {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  /* Ensure icons don't overflow on mobile */
+  svg {
+    flex-shrink: 0;
+  }
+  
+  /* Ensure button text doesn't wrap */
+  button span {
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
 }
 
@@ -54,8 +82,8 @@ img {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -69,4 +97,112 @@ img {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile optimizations */
+@media (max-width: 480px) {
+  /* Smaller gap between elements on mobile */
+  .gap-4 {
+    gap: 0.75rem;
+  }
+  
+  /* Reduce padding for better space usage */
+  .p-4, .px-4, .py-4 {
+    padding: 0.75rem;
+  }
+  
+  /* Adjust card padding on small screens */
+  .card, .dialog {
+    padding: 0.75rem;
+  }
+  
+  /* Adjust font sizes for mobile */
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  h2 {
+    font-size: 1.25rem;
+  }
+  
+  h3 {
+    font-size: 1.125rem;
+  }
+  
+  /* Make sure modals don't take up too much space */
+  .dialog-content {
+    max-width: calc(100% - 32px);
+    margin: 16px;
+  }
+}
+
+/* Touch-friendly buttons */
+.touch-button {
+  min-height: 42px; /* Minimum touch target size */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Cricket scoring specific optimizations */
+.score-widget {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Make cricket stats more compact */
+.compact-score {
+  padding: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.compact-score h2 {
+  font-size: 1rem;
+}
+
+.compact-score .text-lg {
+  font-size: 0.875rem;
+}
+
+.compact-score .text-xl {
+  font-size: 1rem;
+}
+
+.compact-score .text-2xl {
+  font-size: 1.25rem;
+}
+
+/* Better tap targets for mobile */
+.mobile-tap-target {
+  min-height: 40px;
+  min-width: 40px;
+}
+
+/* Fix for dropdown menus on mobile */
+.mobile-dropdown {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Optimize for mobile screens */
+@media (max-width: 640px) {
+  /* Reduce padding for better use of space */
+  .p-6 {
+    padding: 1rem;
+  }
+  
+  /* Make buttons easier to tap */
+  button {
+    min-height: 2.5rem;
+  }
+  
+  /* Keep label and input on same line for narrow forms */
+  .form-row {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Stack grid items on mobile */
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }

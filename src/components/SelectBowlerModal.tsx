@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { UserRoundPlus } from 'lucide-react';
+import { UserRoundPlus, Check, X, Edit } from 'lucide-react';
 
 interface SelectBowlerModalProps {
   open: boolean;
@@ -39,6 +39,8 @@ const SelectBowlerModal = ({
   const [selectedPlayer, setSelectedPlayer] = useState<string>("");
   const [isAddingPlayer, setIsAddingPlayer] = useState(false);
   const [newPlayerName, setNewPlayerName] = useState("");
+  const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
+  const [editingPlayerName, setEditingPlayerName] = useState("");
   
   // Set the current bowler as selected when the modal opens
   useEffect(() => {
@@ -61,10 +63,30 @@ const SelectBowlerModal = ({
       onClose();
     }
   };
+
+  const startEditingPlayer = (player: Player) => {
+    setEditingPlayerId(player.id);
+    setEditingPlayerName(player.name);
+  };
+
+  const savePlayerEdit = (playerId: string) => {
+    // Here we would typically update the player name in the context or API
+    // For now, let's just save the name locally by selecting with the new name
+    if (editingPlayerName.trim()) {
+      onSelect(playerId, editingPlayerName.trim());
+      resetEditing();
+      onClose();
+    }
+  };
+
+  const resetEditing = () => {
+    setEditingPlayerId(null);
+    setEditingPlayerName("");
+  };
   
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -76,22 +98,59 @@ const SelectBowlerModal = ({
               <RadioGroup value={selectedPlayer} onValueChange={setSelectedPlayer}>
                 {availablePlayers.map((player) => (
                   <div key={player.id} className="flex items-center space-x-2 py-2">
-                    <RadioGroupItem value={player.id} id={player.id} />
-                    <Label htmlFor={player.id} className="flex-grow cursor-pointer">
-                      {player.name}
-                    </Label>
+                    {editingPlayerId === player.id ? (
+                      <div className="flex items-center space-x-2 w-full">
+                        <Input
+                          value={editingPlayerName}
+                          onChange={(e) => setEditingPlayerName(e.target.value)}
+                          className="flex-grow text-sm h-8"
+                          autoFocus
+                        />
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-green-500"
+                          onClick={() => savePlayerEdit(player.id)}
+                        >
+                          <Check className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-red-500"
+                          onClick={resetEditing}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <RadioGroupItem value={player.id} id={player.id} />
+                        <Label htmlFor={player.id} className="flex-grow cursor-pointer text-sm">
+                          {player.name}
+                        </Label>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-primary/70 hover:text-primary"
+                          onClick={() => startEditingPlayer(player)}
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 ))}
               </RadioGroup>
               
               {availablePlayers.length === 0 && (
-                <p className="text-muted-foreground text-center py-4">No available players</p>
+                <p className="text-muted-foreground text-center py-4 text-sm">No available players</p>
               )}
               
               {allowAddPlayer && (
                 <Button 
                   variant="outline" 
-                  className="w-full mt-4 flex items-center justify-center"
+                  className="w-full mt-4 flex items-center justify-center text-sm h-9"
                   onClick={() => setIsAddingPlayer(true)}
                 >
                   <UserRoundPlus className="h-4 w-4 mr-2" />
@@ -102,19 +161,20 @@ const SelectBowlerModal = ({
           ) : (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="newPlayerName">Player Name</Label>
+                <Label htmlFor="newPlayerName" className="text-sm">Player Name</Label>
                 <Input
                   id="newPlayerName"
                   value={newPlayerName}
                   onChange={(e) => setNewPlayerName(e.target.value)}
                   placeholder="Enter player name"
+                  className="text-sm"
                   autoFocus
                 />
               </div>
               
               <Button 
                 variant="outline" 
-                className="w-full flex items-center justify-center"
+                className="w-full flex items-center justify-center text-sm h-9"
                 onClick={() => setIsAddingPlayer(false)}
               >
                 Back to Player List
@@ -123,11 +183,18 @@ const SelectBowlerModal = ({
           )}
         </div>
         
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button 
+            variant="outline" 
+            onClick={onClose}
+            className="text-sm h-9"
+          >
+            Cancel
+          </Button>
           <Button 
             onClick={handleSubmit} 
             disabled={(!selectedPlayer && !isAddingPlayer) || (isAddingPlayer && !newPlayerName.trim())}
+            className="text-sm h-9"
           >
             Confirm
           </Button>
