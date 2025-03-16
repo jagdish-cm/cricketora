@@ -59,6 +59,10 @@ export default {
 					accent: '#0070F3',
 					muted: '#F5F8FC',
 					dark: '#0A1F44',
+					green: '#34D399',
+					yellow: '#FBBF24',
+					red: '#F87171',
+					purple: '#8B5CF6',
 				},
 			},
 			borderRadius: {
@@ -99,6 +103,18 @@ export default {
 					from: { transform: 'scale(0.95)', opacity: '0' },
 					to: { transform: 'scale(1)', opacity: '1' },
 				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' },
+				},
+				'bounce-subtle': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-4px)' },
+				},
+				'glow': {
+					'0%, 100%': { boxShadow: '0 0 5px rgba(30, 144, 255, 0.5)' },
+					'50%': { boxShadow: '0 0 20px rgba(30, 144, 255, 0.8)' },
+				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -109,6 +125,9 @@ export default {
 				'slide-down': 'slide-down 0.4s ease-out',
 				'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
 				'scale-in': 'scale-in 0.3s ease-out',
+				'float': 'float 3s ease-in-out infinite',
+				'bounce-subtle': 'bounce-subtle 2s ease-in-out infinite',
+				'glow': 'glow 2s ease-in-out infinite',
 			},
 			backdropFilter: {
 				'none': 'none',
@@ -119,6 +138,13 @@ export default {
 				'button': '0 1px 2px rgba(0, 0, 0, 0.05)',
 				'card': '0 4px 24px rgba(0, 0, 0, 0.05)',
 				'input': '0 2px 4px rgba(0, 0, 0, 0.05)',
+				'glow': '0 0 15px rgba(30, 144, 255, 0.5)',
+			},
+			backgroundImage: {
+				'cricket-pattern': "url('/cricket-pattern.svg')",
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'gradient-cricket': 'linear-gradient(135deg, #E6F0FD 0%, #F0F7FF 50%, #F5F8FC 100%)',
+				'gradient-card': 'linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.3) 100%)',
 			},
 		}
 	},
@@ -159,6 +185,13 @@ export default {
 				},
 				'.transition-opacity-200': {
 					'transition': 'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+				},
+				'.cricket-glow': {
+					'box-shadow': '0 0 15px rgba(30, 144, 255, 0.5)',
+					'transition': 'box-shadow 0.3s ease',
+				},
+				'.cricket-glow:hover': {
+					'box-shadow': '0 0 25px rgba(30, 144, 255, 0.8)',
 				},
 			}
 			addUtilities(newUtilities)

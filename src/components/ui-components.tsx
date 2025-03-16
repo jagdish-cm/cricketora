@@ -48,7 +48,11 @@ export const NextButton = React.forwardRef<
 >(({ children, ...props }, ref) => (
   <Button
     ref={ref}
-    iconRight={<ArrowRight className="h-4 w-4" />}
+    iconRight={<ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform duration-200" />}
+    className={cn(
+      "group",
+      props.className
+    )}
     {...props}
   >
     {children || "Next"}
@@ -64,7 +68,11 @@ export const BackButton = React.forwardRef<
   <Button
     ref={ref}
     variant="outline"
-    iconLeft={<ArrowLeft className="h-4 w-4" />}
+    iconLeft={<ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform duration-200" />}
+    className={cn(
+      "group",
+      props.className
+    )}
     {...props}
   >
     {children || "Back"}
@@ -77,13 +85,15 @@ export const GlassCard = React.forwardRef<
   HTMLDivElement,
   React.ComponentPropsWithoutRef<typeof ShadcnCard> & {
     hoverEffect?: boolean;
+    glowEffect?: boolean;
   }
->(({ className, children, hoverEffect = true, ...props }, ref) => (
+>(({ className, children, hoverEffect = true, glowEffect = false, ...props }, ref) => (
   <ShadcnCard
     ref={ref}
     className={cn(
       "glass-card border-white/20 bg-white/80 backdrop-blur-lg",
       hoverEffect && "hover:shadow-card hover:border-white/30 transition-all-300",
+      glowEffect && "cricket-glow",
       className
     )}
     {...props}
@@ -104,7 +114,7 @@ export const FormInput = React.forwardRef<
 >(({ className, label, error, id, iconLeft, ...props }, ref) => (
   <div className="space-y-2">
     {label && (
-      <Label htmlFor={id} className="text-sm font-medium">
+      <Label htmlFor={id} className="text-sm font-medium flex items-center">
         {label}
       </Label>
     )}
@@ -186,3 +196,98 @@ export const PageContainer = ({
     {children}
   </div>
 );
+
+// Card with hover effect
+export const HoverCard = ({
+  children,
+  className,
+  onClick,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+}) => (
+  <div
+    className={cn(
+      "rounded-xl p-4 bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer",
+      className
+    )}
+    onClick={onClick}
+  >
+    {children}
+  </div>
+);
+
+// Animated badge
+export const AnimatedBadge = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <div className={cn(
+    "inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary animate-bounce-subtle",
+    className
+  )}>
+    {children}
+  </div>
+);
+
+// Icon with background
+export const IconBackground = ({
+  icon,
+  className,
+}: {
+  icon: React.ReactNode;
+  className?: string;
+}) => (
+  <div className={cn(
+    "h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary",
+    className
+  )}>
+    {icon}
+  </div>
+);
+
+// Feature card
+export const FeatureCard = ({
+  icon,
+  title,
+  description,
+  className,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  className?: string;
+}) => (
+  <div className={cn(
+    "p-6 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100",
+    className
+  )}>
+    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4">
+      {icon}
+    </div>
+    <h3 className="text-lg font-semibold mb-2">{title}</h3>
+    <p className="text-muted-foreground">{description}</p>
+  </div>
+);
+
+// Shiny button
+export const ShinyButton = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentPropsWithoutRef<typeof Button>
+>(({ className, children, ...props }, ref) => (
+  <Button
+    ref={ref}
+    className={cn(
+      "bg-gradient-to-r from-primary to-primary/80 text-white overflow-hidden shine-effect",
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </Button>
+));
+ShinyButton.displayName = "ShinyButton";
