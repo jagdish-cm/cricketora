@@ -1,417 +1,210 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 210 100% 99%;
-    --foreground: 222 47% 11%;
-
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-
-    --primary: 210 100% 50%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-
-    --accent: 210 100% 50%;
-    --accent-foreground: 222 47% 11%;
-
-    --destructive: 0 84% 60%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 142 72% 29%;
+    --primary-foreground: 142 72% 95%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 210 100% 50%;
-
-    --radius: 0.75rem;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
   }
-
+ 
   .dark {
-    --background: 222 47% 11%;
+    --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
-    --card: 222 47% 11%;
+    --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
-    --popover: 222 47% 11%;
+    --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 210 100% 50%;
-    --primary-foreground: 222 47% 11%;
-
-    --secondary: 217 33% 17%;
+    --primary: 142 64% 45%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 210 100% 50%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 63% 31%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 213 27% 84%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
   }
 }
-
+ 
 @layer base {
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-background text-foreground font-sans;
-    font-feature-settings: "ss01" on, "ss02" on, "cv01" on, "cv03" on;
-    background-image: 
-      radial-gradient(circle at 100% 100%, rgba(30, 144, 255, 0.05) 0%, transparent 50%),
-      radial-gradient(circle at 0% 0%, rgba(30, 144, 255, 0.05) 0%, transparent 50%);
-    background-attachment: fixed;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  
-  input, textarea, select, button {
-    font-family: inherit;
-    font-feature-settings: inherit;
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-medium tracking-tight;
-  }
-
-  /* Base page transitions */
-  .page-enter {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  
-  .page-enter-active {
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 300ms, transform 300ms;
-  }
-  
-  .page-exit {
-    opacity: 1;
-  }
-  
-  .page-exit-active {
-    opacity: 0;
-    transform: translateY(-8px);
-    transition: opacity 300ms, transform 300ms;
-  }
-  
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 3px;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.2);
-  }
-  
-  /* Button press effect */
-  .btn-press {
-    transform: translateY(0);
-    transition: transform 0.1s ease;
-  }
-  
-  .btn-press:active {
-    transform: translateY(1px);
-  }
-  
-  /* Glass card with hover effect */
-  .glass-card {
-    @apply bg-white/80 backdrop-blur-lg rounded-2xl border border-white/20 shadow-subtle transition-all-300;
-  }
-  
-  .glass-card:hover {
-    @apply shadow-card border-white/30;
-  }
-
-  /* Custom cricket-themed components */
-  .cricket-card {
-    @apply rounded-2xl bg-gradient-card border border-white/30 backdrop-blur-md shadow-card hover:shadow-lg transition-all-300;
-  }
-
-  .cricket-btn {
-    @apply rounded-full bg-primary text-white font-medium shadow-button hover:shadow-md hover:bg-primary/90 active:scale-[0.98] transition-all-200;
-  }
-
-  .cricket-icon-btn {
-    @apply rounded-full p-2 bg-white/80 text-primary shadow-button hover:shadow-md hover:bg-white active:scale-[0.98] transition-all-200;
-  }
-
-  .cricket-input {
-    @apply rounded-lg border border-border bg-white/80 px-4 py-2 shadow-input focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all-200;
-  }
-
-  .cricket-badge {
-    @apply inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary transition-all-200;
-  }
-  
-  /* Fix for radio buttons and switches */
-  [data-radix-radio-group-item] {
-    border-radius: 50% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 16px !important;
-    height: 16px !important;
-  }
-  
-  [data-radix-switch-root] {
-    border-radius: 9999px !important;
-  }
-  
-  [data-radix-switch-thumb] {
-    border-radius: 9999px !important;
-  }
-  
-  /* Mobile optimized components */
-  @media (max-width: 640px) {
-    .cricket-btn {
-      @apply text-sm px-3 py-2;
-    }
-    
-    .cricket-icon-btn {
-      @apply p-1.5;
-    }
-    
-    .cricket-input {
-      @apply px-3 py-1.5 text-sm;
-    }
-    
-    .cricket-badge {
-      @apply px-2 py-0.5 text-xs;
-    }
-    
-    .cricket-card {
-      @apply p-3 rounded-xl;
-    }
-    
-    /* Fix OTP page button text trimming */
-    .back-button span {
-      white-space: nowrap;
-      text-overflow: clip;
-      overflow: visible;
-    }
-    
-    /* Fix button spacing in footer areas */
-    .dialog-footer {
-      gap: 0.5rem !important;
-    }
-    
-    /* Ensure all icons have proper spacing */
-    button svg, a svg {
-      flex-shrink: 0;
-      margin-right: 0.35rem;
-      margin-left: 0.35rem;
-    }
-    
-    /* Fix radio button appearance */
-    [data-radix-radio-group-item] {
-      transform: scale(0.9);
-    }
-  }
-  
-  /* Compact cricket scorecard */
-  .cricket-scorecard-compact {
-    @apply p-2 space-y-2 text-sm;
-  }
-  
-  .cricket-scorecard-compact h2 {
-    @apply text-base font-semibold mb-1;
-  }
-  
-  .cricket-scorecard-compact .score {
-    @apply text-lg font-bold;
-  }
-  
-  .cricket-batsman-compact {
-    @apply p-1.5 text-xs flex justify-between items-center;
-  }
-  
-  .cricket-bowler-compact {
-    @apply p-1.5 text-xs flex justify-between items-center;
-  }
-  
-  /* Better touch targets for mobile */
-  .touch-target {
-    @apply min-h-[40px] min-w-[40px] flex items-center justify-center;
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-@keyframes gradientBg {
+/* Cricket App Custom Styles */
+
+/* Animations */
+@keyframes float {
   0% {
-    background-position: 0% 50%;
+    transform: translateY(0) translateX(0);
   }
   50% {
-    background-position: 100% 50%;
+    transform: translateY(-20px) translateX(10px);
   }
   100% {
-    background-position: 0% 50%;
+    transform: translateY(0) translateX(0);
   }
 }
 
-.gradient-bg {
-  background: linear-gradient(-45deg, #F5F8FC, #EFF6FF, #F0F7FF, #E6F0FD);
-  background-size: 400% 400%;
-  animation: gradientBg 15s ease infinite;
+@keyframes pulse-subtle {
+  0% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.8;
+  }
 }
 
-.text-balance {
-  text-wrap: balance;
-  max-width: 100%;
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
-.shine-effect {
+@keyframes slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 3s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+.animate-slide-up {
+  opacity: 0;
+  animation: slide-up 0.5s ease-out forwards;
+}
+
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+/* UI Elements */
+.shadow-subtle {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.bg-gradient-cricket {
+  background: linear-gradient(to bottom, #f0f9ff 0%, #ffffff 100%);
+}
+
+.cricket-glow {
   position: relative;
-  overflow: hidden;
 }
 
-.shine-effect::after {
+.cricket-glow::after {
   content: '';
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.3) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  transform: rotate(30deg);
-  animation: shine 3s infinite;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 30px rgba(14, 165, 233, 0.15);
+  z-index: -1;
 }
 
-@keyframes shine {
-  0% {
-    transform: translateX(-100%) rotate(30deg);
-  }
-  20%, 100% {
-    transform: translateX(100%) rotate(30deg);
-  }
-}
-
-.cricket-pattern-bg {
-  background-color: #f9fafc;
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231e90ff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-}
-
-/* Mobile optimizations */
+/* Mobile Improvements */
 @media (max-width: 640px) {
-  .text-balance {
-    text-wrap: balance;
+  .text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     max-width: 100%;
   }
   
-  /* Make form controls easier to tap */
-  input, select, textarea, button {
-    @apply text-sm;
+  /* Add custom responsive sizing for buttons on mobile */
+  .mobile-btn-text {
+    font-size: 0.875rem;
   }
   
-  /* Make dialog content scrollable on small screens */
-  .dialog-content {
-    max-height: 80vh;
-    overflow-y: auto;
-  }
-  
-  /* Make buttons more tappable */
-  button {
-    min-height: 2.5rem;
-  }
-  
-  /* Reduce padding for mobile */
-  .p-6 {
-    padding: 1rem;
-  }
-  
-  .py-6 {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-  }
-  
-  .px-6 {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-  
-  /* Better tap targets */
-  .mobile-tap {
-    min-height: 40px;
-    min-width: 40px;
-  }
-  
-  /* Ensure all icons scale appropriately */
-  svg {
-    flex-shrink: 0;
+  .mobile-icon-sm {
+    width: 1rem;
+    height: 1rem;
   }
 }
 
-/* Compact scorecard styles */
-.compact-scorecard {
-  font-size: 0.875rem;
+/* Hide scrollbar but allow scrolling */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.compact-scorecard .team-score {
-  font-size: 1.25rem;
-  font-weight: 700;
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
 
-.compact-scorecard .player-name {
-  font-size: 0.875rem;
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 120px;
+/* Common card styles */
+.cricket-card {
+  @apply bg-white rounded-md border border-gray-100 shadow-sm overflow-hidden;
 }
 
-.compact-scorecard .player-stats {
-  font-variant-numeric: tabular-nums;
-  font-size: 0.875rem;
+.cricket-card-header {
+  @apply p-3 border-b bg-gray-50;
 }
 
-.compact-scorecard .section-header {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
+.cricket-card-body {
+  @apply p-3;
 }
 
-/* Button and input sizing for mobile */
-.btn-mobile {
-  min-height: 40px;
-  font-size: 0.875rem;
-  padding-left: 0.75rem;
-  padding-right: 0.75rem;
-}
-
-.input-mobile {
-  min-height: 40px;
-  font-size: 0.875rem;
+/* Form switch adjustments */
+.form-switch-wrapper {
+  @apply block rounded-full overflow-hidden;
 }

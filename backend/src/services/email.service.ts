@@ -49,7 +49,7 @@ export const sendOtpEmail = async (
   
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-      <h2 style="color: #3b82f6; text-align: center;">CricketOra Verification Code</h2>
+      <h2 style="color: #2e7d32; text-align: center;">CricketOra Verification Code</h2>
       <p>Hello,</p>
       <p>Thank you for using CricketOra! Please use the verification code below to complete your match setup:</p>
       <div style="background-color: #f3f4f6; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">

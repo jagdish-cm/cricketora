@@ -1,9 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMatch, BallEvent, Player } from '@/context/MatchContext';
 import { 
-  PageTransition, 
-  GlassCard,
+  PageTransition,
   Button,
 } from '@/components/ui-components';
 import { 
@@ -19,7 +19,9 @@ import {
   PlayCircle,
   FastForward,
   History,
-  ArrowLeft
+  ArrowLeft,
+  BookOpen,
+  Share2
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -495,29 +497,137 @@ const ScoringInterface = () => {
     if (!match) return [];
     return bowlingTeam.players;
   };
+
+  const completedOvers = currentInnings.currentOver;
+  const ballsInCurrentOver = currentInnings.currentBall;
+  const oversDisplay = `${completedOvers}${ballsInCurrentOver > 0 ? '.' + ballsInCurrentOver : ''}`;
+  const currentRunRate = currentInnings.totalRuns > 0 ? 
+    (currentInnings.totalRuns / (parseFloat(oversDisplay) || 1)).toFixed(2) : '0.00';
   
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-white">
-      <ScoreHeader match={match} openOverHistoryModal={openOverHistoryModal} />
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* Cricbuzz-style header */}
+      <header className="bg-green-600 text-white sticky top-0 z-30">
+        <div className="container px-2 py-2 mx-auto">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="mr-2 text-white hover:bg-green-700"
+                onClick={() => navigate('/')}
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <h1 className="text-lg font-bold">Match Center</h1>
+            </div>
+            
+            <div className="flex items-center space-x-1">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-white hover:bg-green-700 rounded-full h-8 w-8"
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="text-white hover:bg-green-700 rounded-full h-8 w-8"
+                  >
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <div className="space-y-4 py-4">
+                    <h3 className="text-lg font-medium">Match Menu</h3>
+                    
+                    <div className="space-y-2">
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start"
+                        onClick={openOverHistoryModal}
+                      >
+                        <History className="h-4 w-4 mr-2" />
+                        Ball by Ball
+                      </Button>
+                      
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start"
+                      >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Scorecard
+                      </Button>
+                      
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start"
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Match Settings
+                      </Button>
+                      
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start text-red-600 hover:text-red-700"
+                      >
+                        <Clock className="h-4 w-4 mr-2" />
+                        End Match
+                      </Button>
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Match Info Bar */}
+      <div className="bg-white border-b py-2 px-3 shadow-sm">
+        <div className="flex justify-between items-center text-sm">
+          <div className="font-medium">{match.team1.name} vs {match.team2.name}</div>
+          <div className="text-green-700 text-xs bg-green-50 px-2 py-0.5 rounded font-mono">
+            {match.id}
+          </div>
+        </div>
+      </div>
       
       <PageTransition className="flex-grow flex flex-col max-w-full">
-        <div className="container max-w-4xl mx-auto px-4 py-6 flex-grow flex flex-col">
-          <div className="mb-6">
-            <ScoreSummary 
-              match={match} 
-              currentInnings={currentInnings} 
-              battingTeam={battingTeam} 
-            />
+        <div className="container mx-auto px-2 py-2 flex-grow flex flex-col">
+          {/* Score Summary - Cricbuzz Style */}
+          <div className="bg-white rounded-md shadow-sm border mb-2 overflow-hidden">
+            <div className="bg-green-600 text-white px-3 py-3">
+              <div className="flex justify-between items-baseline">
+                <h2 className="text-base font-semibold">{battingTeam.name}</h2>
+                <div className="flex items-baseline">
+                  <span className="text-2xl font-bold">{currentInnings.totalRuns}</span>
+                  <span className="mx-0.5">/</span>
+                  <span>{currentInnings.wickets}</span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center mt-1 text-green-100 text-xs">
+                <div className="flex items-center">
+                  <span>{oversDisplay} overs</span>
+                </div>
+                <div>
+                  CRR: {currentRunRate}
+                </div>
+              </div>
+            </div>
           </div>
           
-          <Separator className="my-4" />
+          {/* Current Over Display - Compact */}
+          <CurrentOverDisplay 
+            currentInnings={currentInnings}
+            onHistoryClick={openOverHistoryModal}
+          />
           
-          <div className="flex-grow flex flex-col space-y-6">
-            <CurrentOverDisplay 
-              currentInnings={currentInnings}
-              onHistoryClick={openOverHistoryModal}
-            />
-            
+          {/* Players Info Section */}
+          <div className="grid gap-2 mt-2">
             <BatsmenInfo 
               currentInnings={currentInnings}
               battingTeam={battingTeam}
@@ -527,7 +637,10 @@ const ScoringInterface = () => {
               currentInnings={currentInnings}
               bowlingTeam={bowlingTeam}
             />
-            
+          </div>
+          
+          {/* Scoring Pad */}
+          <div className="mt-auto pt-3">
             <ScoringButtons 
               selectedRun={selectedRun}
               onRunSelect={handleRunSelect}
@@ -542,6 +655,7 @@ const ScoringInterface = () => {
         </div>
       </PageTransition>
 
+      {/* Modals */}
       <RunsInputModal 
         open={isRunsModalOpen} 
         onClose={closeRunsModal}
@@ -654,140 +768,7 @@ const ScoringInterface = () => {
   );
 };
 
-const ScoreHeader = ({ match, openOverHistoryModal }: { match: any, openOverHistoryModal: () => void }) => {
-  const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
-  return (
-    <header className="bg-white shadow-subtle backdrop-blur-lg bg-white/90 sticky top-0 z-10">
-      <div className="container max-w-4xl mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="mr-2"
-              onClick={() => navigate('/')}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center">
-              <Award className="h-5 w-5 text-primary mr-2" />
-              <span className="font-medium">CricketOra</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <div className="text-sm bg-primary/10 text-primary px-2 py-1 rounded-md font-mono">
-              {match.id}
-            </div>
-            
-            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-              <SheetTrigger asChild>
-                <Button 
-                  size="icon" 
-                  variant="ghost" 
-                  className="rounded-full h-8 w-8"
-                  aria-label="Menu"
-                >
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent>
-                <div className="space-y-6 py-6">
-                  <h3 className="text-lg font-medium">Match Menu</h3>
-                  
-                  <div className="space-y-2">
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start"
-                      onClick={openOverHistoryModal}
-                    >
-                      <History className="h-4 w-4 mr-2" />
-                      View Over History
-                    </Button>
-                    
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start"
-                      onClick={() => {
-                        // TBD: Implement scorecard view
-                      }}
-                    >
-                      <Info className="h-4 w-4 mr-2" />
-                      Full Scorecard
-                    </Button>
-                    
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start"
-                      onClick={() => {
-                        // TBD: Implement settings
-                      }}
-                    >
-                      <Settings className="h-4 w-4 mr-2" />
-                      Match Settings
-                    </Button>
-                    
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start text-destructive hover:text-destructive"
-                      onClick={() => {
-                        // TBD: Implement end match
-                      }}
-                    >
-                      <Clock className="h-4 w-4 mr-2" />
-                      End Match
-                    </Button>
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-};
-
-const ScoreSummary = ({ 
-  match, 
-  currentInnings, 
-  battingTeam 
-}: { 
-  match: any;
-  currentInnings: any;
-  battingTeam: any;
-}) => {
-  const completedOvers = currentInnings.currentOver;
-  const ballsInCurrentOver = currentInnings.currentBall;
-  const oversDisplay = `${completedOvers}${ballsInCurrentOver > 0 ? '.' + ballsInCurrentOver : ''}`;
-  
-  return (
-    <GlassCard className="overflow-hidden">
-      <div className="bg-gradient-to-r from-primary/90 to-primary p-4 text-white">
-        <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold">{battingTeam.name}</h2>
-          <div className="flex items-baseline space-x-1">
-            <span className="text-3xl font-bold">{currentInnings.totalRuns}</span>
-            <span>/</span>
-            <span className="text-xl">{currentInnings.wickets}</span>
-          </div>
-        </div>
-        <div className="flex justify-between items-center mt-1 text-white/90 text-sm">
-          <div className="flex items-center space-x-1">
-            <Clock className="h-3.5 w-3.5" />
-            <span>{oversDisplay} overs</span>
-          </div>
-          <div>
-            CRR: {currentInnings.totalRuns > 0 ? (currentInnings.totalRuns / (parseFloat(oversDisplay) || 1)).toFixed(2) : '0.00'}
-          </div>
-        </div>
-      </div>
-    </GlassCard>
-  );
-};
-
+// Compact Current Over Display Component
 const CurrentOverDisplay = ({ 
   currentInnings,
   onHistoryClick
@@ -811,77 +792,53 @@ const CurrentOverDisplay = ({
   const emptyBallsCount = Math.max(0, 6 - currentOverBalls.length);
   
   const renderBallContent = (ball: any) => {
-    const elements = [];
-    
-    if (ball.isWicket) elements.push('W');
-    if (ball.isWide) elements.push('Wd');
-    if (ball.isNoBall) elements.push('Nb');
-    if (ball.isBye) elements.push('B');
-    if (ball.isLegBye) elements.push('Lb');
-    if (ball.runs > 0) elements.push(ball.runs);
-    
-    return elements.join(',');
+    if (ball.isWicket) return 'W';
+    if (ball.isWide) return 'Wd';
+    if (ball.isNoBall) return 'Nb';
+    if (ball.isBye) return 'B';
+    if (ball.isLegBye) return 'Lb';
+    return ball.runs;
   };
   
   const getBallClass = (ball: any) => {
     return cn(
-      "h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium border flex-shrink-0",
+      "h-8 w-8 rounded-full flex items-center justify-center text-xs font-medium border flex-shrink-0",
       ball.isWicket ? "bg-red-100 border-red-300 text-red-700" :
       ball.isWide || ball.isNoBall ? "bg-amber-100 border-amber-300 text-amber-700" :
       ball.isBye || ball.isLegBye ? "bg-indigo-100 border-indigo-300 text-indigo-700" :
-      ball.runs === 4 || ball.runs === 6 ? "bg-green-100 border-green-300 text-green-700" :
+      ball.runs === 4 ? "bg-green-100 border-green-300 text-green-700" :
+      ball.runs === 6 ? "bg-emerald-100 border-emerald-300 text-emerald-700" :
       "bg-gray-100 border-gray-300 text-gray-700"
     );
   };
   
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center">
-        <h3 className="text-sm font-medium text-muted-foreground">Current Over</h3>
+    <div className="bg-white rounded-md shadow-sm border p-2 mb-2">
+      <div className="flex justify-between items-center mb-1.5">
+        <h3 className="text-xs font-medium text-gray-600">This Over</h3>
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-7 px-2 text-xs"
+          className="h-6 px-2 text-xs text-green-700"
           onClick={onHistoryClick}
         >
           <History className="h-3.5 w-3.5 mr-1" />
           History
         </Button>
       </div>
-      <div className="flex space-x-2 overflow-x-auto pb-2">
-        {currentOverBalls.map((ball: any, index: number) => {
-          const hasMultipleEvents = 
-            [ball.isWicket, ball.isWide, ball.isNoBall, ball.isBye, ball.isLegBye].filter(Boolean).length > 0 ||
-            (ball.isWide && ball.runs > 1) ||
-            (ball.isNoBall && ball.runs > 0);
-            
-          return (
-            <div 
-              key={index}
-              className={cn(getBallClass(ball), "relative")}
-            >
-              <div className="absolute -top-1 -left-1 bg-gray-200 rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
-                {index + 1}
-              </div>
-              {hasMultipleEvents ? (
-                <div className="text-[10px] leading-tight">{renderBallContent(ball)}</div>
-              ) : (
-                <div>
-                  {ball.isWicket ? 'W' : 
-                   ball.isWide ? 'Wd' :
-                   ball.isNoBall ? 'Nb' :
-                   ball.isBye ? 'B' :
-                   ball.isLegBye ? 'Lb' :
-                   ball.runs}
-                </div>
-              )}
-            </div>
-          );
-        })}
+      <div className="flex space-x-2 overflow-x-auto pb-1 scrollbar-none">
+        {currentOverBalls.map((ball: any, index: number) => (
+          <div 
+            key={index}
+            className={getBallClass(ball)}
+          >
+            {renderBallContent(ball)}
+          </div>
+        ))}
         {Array.from({ length: emptyBallsCount }).map((_, index) => (
           <div 
             key={`empty-${index}`}
-            className="h-10 w-10 rounded-full flex items-center justify-center text-sm border border-gray-200 text-gray-300 flex-shrink-0"
+            className="h-8 w-8 rounded-full flex items-center justify-center text-xs border border-gray-200 text-gray-300 flex-shrink-0"
           >
             •
           </div>
@@ -891,6 +848,7 @@ const CurrentOverDisplay = ({
   );
 };
 
+// Compact Batsmen Info Component
 const BatsmenInfo = ({ 
   currentInnings,
   battingTeam
@@ -943,34 +901,34 @@ const BatsmenInfo = ({
   const batsmen = getBatsmen();
   
   return (
-    <div className="space-y-2">
-      <h3 className="text-sm font-medium text-muted-foreground">Batsmen</h3>
-      <div className="grid grid-cols-1 gap-2">
+    <div className="bg-white rounded-md shadow-sm border overflow-hidden">
+      <div className="bg-green-50 px-2 py-1.5">
+        <h3 className="text-xs font-medium text-green-800">Batsmen</h3>
+      </div>
+      <div className="divide-y">
         {batsmen.map((batsman, index) => (
           <div 
             key={index}
             className={cn(
-              "p-3 rounded-lg border flex items-center",
-              batsman.onStrike ? "bg-blue-50 border-blue-200" : "bg-gray-50 border-gray-200"
+              "px-3 py-2 flex items-center",
+              batsman.onStrike ? "bg-green-50/50" : ""
             )}
           >
             <div className="flex-1">
               <div className="flex items-center">
-                <span className="font-medium">{batsman.name}</span>
-                {batsman.onStrike && (
-                  <span className="ml-2 text-xs bg-primary text-white px-1.5 py-0.5 rounded">
-                    *
-                  </span>
-                )}
+                <span className="font-medium text-sm">
+                  {batsman.name}
+                  {batsman.onStrike && <span className="ml-1 text-green-600">*</span>}
+                </span>
               </div>
-              <div className="text-sm text-muted-foreground mt-1">
+              <div className="text-xs text-gray-500 mt-0.5">
                 {batsman.fours} fours, {batsman.sixes} sixes
               </div>
             </div>
             <div className="text-right">
-              <div className="text-lg font-semibold">{batsman.runs}</div>
-              <div className="text-xs text-muted-foreground">
-                {batsman.balls} balls ({batsman.strikeRate.toFixed(2)})
+              <div className="text-base font-semibold">{batsman.runs}</div>
+              <div className="text-xs text-gray-500">
+                {batsman.balls} balls
               </div>
             </div>
           </div>
@@ -980,6 +938,7 @@ const BatsmenInfo = ({
   );
 };
 
+// Compact Bowler Info Component
 const BowlerInfo = ({ 
   currentInnings,
   bowlingTeam
@@ -1031,20 +990,22 @@ const BowlerInfo = ({
   const bowler = getBowler();
   
   return (
-    <div className="space-y-2">
-      <h3 className="text-sm font-medium text-muted-foreground">Bowler</h3>
-      <div className="p-3 rounded-lg border bg-gray-50 border-gray-200">
+    <div className="bg-white rounded-md shadow-sm border overflow-hidden">
+      <div className="bg-green-50 px-2 py-1.5">
+        <h3 className="text-xs font-medium text-green-800">Bowler</h3>
+      </div>
+      <div className="px-3 py-2">
         <div className="flex justify-between items-center">
-          <span className="font-medium">{bowler.name}</span>
-          <span className="text-sm text-muted-foreground">
+          <span className="font-medium text-sm">{bowler.name}</span>
+          <span className="text-xs text-gray-500">
             Econ: {bowler.economy}
           </span>
         </div>
         <div className="flex justify-between items-center mt-1">
-          <span className="text-sm">
-            {bowler.overs} overs, {bowler.maidens} maiden
+          <span className="text-xs text-gray-500">
+            {bowler.overs} ov, {bowler.maidens} md
           </span>
-          <span className="font-semibold">
+          <span className="font-semibold text-sm">
             {bowler.wickets}/{bowler.runs}
           </span>
         </div>
@@ -1053,6 +1014,7 @@ const BowlerInfo = ({
   );
 };
 
+// Redesigned Scoring Buttons Component
 const ScoringButtons = ({ 
   selectedRun,
   onRunSelect,
@@ -1075,27 +1037,25 @@ const ScoringButtons = ({
   const runOptions = [0, 1, 2, 3, 4, 6];
   
   return (
-    <div className="space-y-4 mb-6 relative">
-      <h3 className="text-sm font-medium text-muted-foreground">Scoring</h3>
-      
+    <div className="space-y-2 relative mb-4">
       {disabled && (
-        <div className="absolute inset-0 bg-gray-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
-          <div className="text-center p-4">
-            <h3 className="text-lg font-medium mb-2">Innings Setup Required</h3>
-            <p className="text-muted-foreground">Please select batsmen and bowler to start the innings</p>
+        <div className="absolute inset-0 bg-white/70 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
+          <div className="text-center p-3">
+            <h3 className="text-base font-medium mb-1">Innings Setup Required</h3>
+            <p className="text-gray-500 text-sm">Please select batsmen and bowler to start</p>
           </div>
         </div>
       )}
       
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2">
         {runOptions.map((run) => (
           <Button
             key={run}
             variant={selectedRun === run ? "default" : "outline"}
             className={cn(
-              "h-16 text-xl font-medium transition-all",
-              run === 4 && "bg-green-100 border-green-300 text-green-700 hover:bg-green-200",
-              run === 6 && "bg-emerald-100 border-emerald-300 text-emerald-700 hover:bg-emerald-200"
+              "h-12 text-base sm:text-lg font-medium transition-all",
+              run === 4 && "bg-green-50 border-green-300 text-green-700 hover:bg-green-100",
+              run === 6 && "bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100"
             )}
             onClick={() => onRunSelect(run)}
             disabled={disabled}
@@ -1105,10 +1065,10 @@ const ScoringButtons = ({
         ))}
       </div>
       
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2">
         <Button
           variant="outline"
-          className="bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
+          className="bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 h-10 text-sm"
           onClick={onExtrasClick}
           disabled={disabled}
         >
@@ -1116,7 +1076,7 @@ const ScoringButtons = ({
         </Button>
         <Button
           variant="outline"
-          className="h-auto py-2.5"
+          className="h-10 text-sm"
           onClick={onCustomRunsClick}
           disabled={disabled}
         >
@@ -1126,7 +1086,7 @@ const ScoringButtons = ({
       
       <Button
         variant="outline"
-        className="w-full bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+        className="w-full bg-red-50 border-red-200 text-red-700 hover:bg-red-100 h-10 text-sm"
         onClick={onWicketClick}
         disabled={disabled}
       >
@@ -1135,21 +1095,23 @@ const ScoringButtons = ({
       
       <div className="flex justify-between">
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
-          className="text-muted-foreground"
+          className="text-gray-600 h-8 text-xs"
           onClick={onOverHistoryClick}
           disabled={disabled}
         >
+          <Edit className="h-3.5 w-3.5 mr-1" />
           Edit Ball
         </Button>
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
-          className="text-primary"
+          className="text-green-700 h-8 text-xs"
           onClick={onSwitchStrikeClick}
           disabled={disabled}
         >
+          <RotateCw className="h-3.5 w-3.5 mr-1" />
           Switch Strike
         </Button>
       </div>
@@ -1158,4 +1120,3 @@ const ScoringButtons = ({
 };
 
 export default ScoringInterface;
-
