@@ -179,12 +179,15 @@ const EmailVerification = () => {
               />
             </div>
             
-            <div className="flex justify-between pt-4">
+            <div className="flex justify-between pt-4 gap-2">
               <BackButton
                 onClick={() => navigate('/new-match')}
                 disabled={isVerifying}
-                className="hover:bg-gray-100 transition-colors duration-200"
-              />
+                className="hover:bg-gray-100 transition-colors duration-200 min-w-[80px]"
+              >
+                <span className="hidden sm:inline">Back</span>
+                <span className="sm:hidden">Back</span>
+              </BackButton>
               <Button 
                 type="submit"
                 className="bg-primary hover:bg-primary/90 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300 flex items-center"
@@ -193,14 +196,15 @@ const EmailVerification = () => {
                 {isVerifying ? (
                   <div className="flex items-center">
                     <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Verifying...
+                    <span>Verifying...</span>
                   </div>
                 ) : (
                   <div className="flex items-center">
                     {verificationCode.length === 6 && (
                       <CheckCircle2 className="h-4 w-4 mr-2 animate-pulse-subtle" />
                     )}
-                    <span>Verify & Continue</span>
+                    <span className="hidden sm:inline">Verify & Continue</span>
+                    <span className="sm:hidden">Verify</span>
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </div>
                 )}

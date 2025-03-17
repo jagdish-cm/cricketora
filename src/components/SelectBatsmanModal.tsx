@@ -100,7 +100,7 @@ const SelectBatsmanModal = ({
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-green-500"
+                          className="h-8 w-8 text-green-500 flex-shrink-0 p-1"
                           onClick={() => savePlayerEdit(player.id)}
                         >
                           <Check className="h-4 w-4" />
@@ -108,7 +108,7 @@ const SelectBatsmanModal = ({
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-red-500"
+                          className="h-8 w-8 text-red-500 flex-shrink-0 p-1"
                           onClick={resetEditing}
                         >
                           <X className="h-4 w-4" />
@@ -116,14 +116,16 @@ const SelectBatsmanModal = ({
                       </div>
                     ) : (
                       <>
-                        <RadioGroupItem value={player.id} id={player.id} />
+                        <div className="flex h-4 w-4 items-center justify-center">
+                          <RadioGroupItem value={player.id} id={player.id} className="h-4 w-4" />
+                        </div>
                         <Label htmlFor={player.id} className="flex-grow cursor-pointer text-sm">
                           {player.name}
                         </Label>
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-primary/70 hover:text-primary"
+                          className="h-8 w-8 text-primary/70 hover:text-primary flex-shrink-0 p-1"
                           onClick={() => startEditingPlayer(player)}
                         >
                           <Edit className="h-3.5 w-3.5" />
@@ -144,7 +146,7 @@ const SelectBatsmanModal = ({
                   className="w-full mt-4 flex items-center justify-center text-sm h-9"
                   onClick={() => setIsAddingPlayer(true)}
                 >
-                  <UserRoundPlus className="h-4 w-4 mr-2" />
+                  <UserRoundPlus className="h-4 w-4 mr-2 flex-shrink-0" />
                   Add New Player
                 </Button>
               )}

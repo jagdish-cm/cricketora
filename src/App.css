@@ -38,6 +38,15 @@ button {
   touch-action: manipulation;
 }
 
+/* Fix button text truncation */
+button span {
+  display: inline-block;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
 /* Prevent images from overflowing */
 img {
   max-width: 100%;
@@ -58,8 +67,8 @@ img {
   
   /* Adjust button padding on mobile */
   button {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
   
   /* Ensure icons don't overflow on mobile */
@@ -71,6 +80,24 @@ img {
   button span {
     text-overflow: ellipsis;
     overflow: hidden;
+    max-width: 100%;
+  }
+  
+  /* Footer buttons spacing fix */
+  .dialog-footer {
+    gap: 0.5rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  /* Fix radio buttons & switches */
+  .radio-group-item, .switch-thumb {
+    transform: scale(0.9);
+  }
+  
+  /* Fix bottom spacing for small devices */
+  .dialog-content {
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
   }
 }
 
@@ -134,6 +161,33 @@ img {
     max-width: calc(100% - 32px);
     margin: 16px;
   }
+  
+  /* Fix radio button sizing */
+  .radix-radio-item, .radix-switch-thumb {
+    transform: scale(0.9) !important;
+  }
+  
+  /* Ensure footer buttons have room */
+  .dialog-footer {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+  
+  /* Fix edit buttons in selection modal */
+  .edit-button {
+    padding: 0.25rem !important;
+  }
+  
+  /* Fix verification page buttons */
+  .verify-page-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  
+  .verify-page-footer button {
+    min-width: 80px;
+  }
 }
 
 /* Touch-friendly buttons */
@@ -183,6 +237,21 @@ img {
   overflow-y: auto;
 }
 
+/* Make sure radio buttons are visible */
+.radix-radio-wrapper .radix-radio-item {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* Fix switch appearance */
+.radix-switch-root {
+  border-radius: 999px !important;
+}
+
+.radix-switch-thumb {
+  border-radius: 9999px !important; 
+}
+
 /* Optimize for mobile screens */
 @media (max-width: 640px) {
   /* Reduce padding for better use of space */
@@ -204,5 +273,23 @@ img {
   /* Stack grid items on mobile */
   .grid {
     grid-template-columns: 1fr;
+  }
+  
+  /* Fix button spacing in forms */
+  .form-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  
+  /* Fix edit icons */
+  button.edit-button {
+    padding: 4px !important;
+  }
+  
+  /* Ensure icon buttons are properly sized */
+  button.icon-button svg {
+    width: 16px;
+    height: 16px;
   }
 }

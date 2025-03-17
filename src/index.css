@@ -172,6 +172,24 @@
     @apply inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary transition-all-200;
   }
   
+  /* Fix for radio buttons and switches */
+  [data-radix-radio-group-item] {
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
+  [data-radix-switch-root] {
+    border-radius: 9999px !important;
+  }
+  
+  [data-radix-switch-thumb] {
+    border-radius: 9999px !important;
+  }
+  
   /* Mobile optimized components */
   @media (max-width: 640px) {
     .cricket-btn {
@@ -192,6 +210,30 @@
     
     .cricket-card {
       @apply p-3 rounded-xl;
+    }
+    
+    /* Fix OTP page button text trimming */
+    .back-button span {
+      white-space: nowrap;
+      text-overflow: clip;
+      overflow: visible;
+    }
+    
+    /* Fix button spacing in footer areas */
+    .dialog-footer {
+      gap: 0.5rem !important;
+    }
+    
+    /* Ensure all icons have proper spacing */
+    button svg, a svg {
+      flex-shrink: 0;
+      margin-right: 0.35rem;
+      margin-left: 0.35rem;
+    }
+    
+    /* Fix radio button appearance */
+    [data-radix-radio-group-item] {
+      transform: scale(0.9);
     }
   }
   
