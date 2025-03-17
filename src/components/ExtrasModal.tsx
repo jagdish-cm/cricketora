@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { cn } from "@/lib/utils";
 
 export type ExtraType = 'wide' | 'noBall' | 'bye' | 'legBye' | 'penalty';
 
@@ -74,6 +74,14 @@ const ExtrasModal = ({
     resetForm();
     onClose();
   };
+
+  // Default rotation based on ICC rules
+  const setDefaultRotation = (run: string) => {
+    const parsedRun = parseInt(run);
+    if (!isNaN(parsedRun)) {
+      setRotateStrike(parsedRun % 2 === 1);
+    }
+  };
   
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleCancel()}>
@@ -85,35 +93,73 @@ const ExtrasModal = ({
         
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>Extra Type</Label>
-            <RadioGroup value={extraType} onValueChange={(value: ExtraType) => setExtraType(value)}>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex items-center space-x-2 py-2">
-                  <RadioGroupItem value="wide" id="wide" />
-                  <Label htmlFor="wide" className="cursor-pointer">Wide</Label>
-                </div>
-                <div className="flex items-center space-x-2 py-2">
-                  <RadioGroupItem value="noBall" id="noBall" />
-                  <Label htmlFor="noBall" className="cursor-pointer">No Ball</Label>
-                </div>
-                {byesEnabled && (
-                  <div className="flex items-center space-x-2 py-2">
-                    <RadioGroupItem value="bye" id="bye" />
-                    <Label htmlFor="bye" className="cursor-pointer">Bye</Label>
-                  </div>
+            <Label className="text-sm font-medium">Extra Type</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                className={cn(
+                  "p-3 rounded-md border text-sm flex items-center justify-center font-medium",
+                  extraType === 'wide' 
+                    ? "bg-green-50 border-green-500 text-green-700 ring-2 ring-green-200" 
+                    : "border-gray-200 hover:border-green-300 hover:bg-green-50/50"
                 )}
-                {legByesEnabled && (
-                  <div className="flex items-center space-x-2 py-2">
-                    <RadioGroupItem value="legBye" id="legBye" />
-                    <Label htmlFor="legBye" className="cursor-pointer">Leg Bye</Label>
-                  </div>
+                onClick={() => setExtraType('wide')}
+              >
+                Wide
+              </button>
+              <button
+                type="button"
+                className={cn(
+                  "p-3 rounded-md border text-sm flex items-center justify-center font-medium",
+                  extraType === 'noBall' 
+                    ? "bg-green-50 border-green-500 text-green-700 ring-2 ring-green-200" 
+                    : "border-gray-200 hover:border-green-300 hover:bg-green-50/50"
                 )}
-                <div className="flex items-center space-x-2 py-2">
-                  <RadioGroupItem value="penalty" id="penalty" />
-                  <Label htmlFor="penalty" className="cursor-pointer">Penalty</Label>
-                </div>
-              </div>
-            </RadioGroup>
+                onClick={() => setExtraType('noBall')}
+              >
+                No Ball
+              </button>
+              {byesEnabled && (
+                <button
+                  type="button"
+                  className={cn(
+                    "p-3 rounded-md border text-sm flex items-center justify-center font-medium",
+                    extraType === 'bye' 
+                      ? "bg-green-50 border-green-500 text-green-700 ring-2 ring-green-200" 
+                      : "border-gray-200 hover:border-green-300 hover:bg-green-50/50"
+                  )}
+                  onClick={() => setExtraType('bye')}
+                >
+                  Bye
+                </button>
+              )}
+              {legByesEnabled && (
+                <button
+                  type="button"
+                  className={cn(
+                    "p-3 rounded-md border text-sm flex items-center justify-center font-medium",
+                    extraType === 'legBye' 
+                      ? "bg-green-50 border-green-500 text-green-700 ring-2 ring-green-200" 
+                      : "border-gray-200 hover:border-green-300 hover:bg-green-50/50"
+                  )}
+                  onClick={() => setExtraType('legBye')}
+                >
+                  Leg Bye
+                </button>
+              )}
+              <button
+                type="button"
+                className={cn(
+                  "p-3 rounded-md border text-sm flex items-center justify-center font-medium",
+                  extraType === 'penalty' 
+                    ? "bg-green-50 border-green-500 text-green-700 ring-2 ring-green-200" 
+                    : "border-gray-200 hover:border-green-300 hover:bg-green-50/50"
+                )}
+                onClick={() => setExtraType('penalty')}
+              >
+                Penalty
+              </button>
+            </div>
           </div>
           
           <div className="space-y-2">
@@ -124,7 +170,10 @@ const ExtrasModal = ({
               min="0"
               max="99"
               value={runs}
-              onChange={(e) => setRuns(e.target.value)}
+              onChange={(e) => {
+                setRuns(e.target.value);
+                setDefaultRotation(e.target.value);
+              }}
               placeholder="Enter runs"
             />
           </div>

@@ -6,6 +6,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -81,6 +82,7 @@ const ScoreConfirmationModal = ({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Confirm Score</DialogTitle>
+          <DialogDescription>Please verify the details before confirming</DialogDescription>
         </DialogHeader>
         
         <div className="py-4">
@@ -101,7 +103,7 @@ const ScoreConfirmationModal = ({
           )}
           
           {allowRotateStrikeToggle && (
-            <div className="flex items-center space-x-2 mt-4 p-2 bg-gray-50 rounded-md">
+            <div className="flex items-center space-x-2 mt-4 p-2 bg-green-50 rounded-md">
               <Switch
                 id="rotateStrike"
                 checked={rotateStrike}

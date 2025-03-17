@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMatch, BallEvent, Player } from '@/context/MatchContext';
 import { 
@@ -20,7 +21,9 @@ import {
   History,
   ArrowLeft,
   BookOpen,
-  Share2
+  Share2,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -45,6 +48,7 @@ const ScoringInterface = () => {
   const [pendingScoreDetails, setPendingScoreDetails] = useState<ScoreDetails | null>(null);
   const [noStrikeRotation, setNoStrikeRotation] = useState<boolean>(false);
   const [selectedBallToEdit, setSelectedBallToEdit] = useState<{overIndex: number, ballIndex: number} | null>(null);
+  const [currentOverIndex, setCurrentOverIndex] = useState<number>(0);
   
   const {
     needsInitialization,
@@ -114,6 +118,7 @@ const ScoringInterface = () => {
         title: "No match information",
         description: "Please start a new match first",
         variant: "destructive",
+        duration: 5000,
       });
       return;
     }
@@ -123,10 +128,17 @@ const ScoringInterface = () => {
       toast({
         title: "Match not set up",
         description: "Please complete match setup first",
+        duration: 5000,
       });
       return;
     }
   }, [match, navigate]);
+
+  useEffect(() => {
+    if (match && match.innings.length > 0) {
+      setCurrentOverIndex(match.innings[match.currentInnings].currentOver);
+    }
+  }, [match]);
   
   if (!match || match.innings.length === 0) return null;
   
@@ -147,8 +159,8 @@ const ScoringInterface = () => {
       
       setPendingBallEvent(ballEvent);
       
-      const willRotateStrike = run % 2 === 1 || 
-        (currentInnings.currentBall === 5 && !ballEvent.isWide && !ballEvent.isNoBall);
+      // Default rotation based on ICC rules
+      const willRotateStrike = run % 2 === 1;
       
       setPendingScoreDetails({
         runs: run,
@@ -160,8 +172,6 @@ const ScoringInterface = () => {
       openScoreConfirmation();
       
       setTimeout(() => setSelectedRun(null), 300);
-    } else {
-      openRunsModal();
     }
   };
 
@@ -174,13 +184,16 @@ const ScoringInterface = () => {
     };
     
     setPendingBallEvent(ballEvent);
-    setNoStrikeRotation(!runsInfo.isStrikeRotated);
+    
+    // Default rotation based on ICC rules
+    const willRotateStrike = runsInfo.runs % 2 === 1;
+    setNoStrikeRotation(!willRotateStrike);
     
     setPendingScoreDetails({
       runs: runsInfo.runs,
       batsmanName: getBatsmanName(currentInnings.onStrike),
       bowlerName: getBowlerName(currentInnings.currentBowler),
-      rotateStrike: runsInfo.isStrikeRotated,
+      rotateStrike: willRotateStrike,
     });
     
     openScoreConfirmation();
@@ -210,7 +223,10 @@ const ScoringInterface = () => {
     }
 
     setPendingBallEvent(ballEvent);
-    setNoStrikeRotation(!extrasInfo.rotateStrike);
+    
+    // Default rotation based on ICC rules
+    const willRotateStrike = extrasInfo.runs % 2 === 1;
+    setNoStrikeRotation(!willRotateStrike);
     
     setPendingScoreDetails({
       runs: extrasInfo.runs,
@@ -221,7 +237,7 @@ const ScoringInterface = () => {
       isWicket: extrasInfo.isWicket,
       batsmanName: getBatsmanName(currentInnings.onStrike),
       bowlerName: getBowlerName(currentInnings.currentBowler),
-      rotateStrike: extrasInfo.rotateStrike,
+      rotateStrike: willRotateStrike,
     });
     
     openScoreConfirmation();
@@ -275,6 +291,7 @@ const ScoringInterface = () => {
         toast({
           title: "Strike Rotated",
           description: "Batsmen positions switched",
+          duration: 5000,
         });
       }
     } catch (err) {
@@ -283,6 +300,7 @@ const ScoringInterface = () => {
         title: "Error",
         description: "Failed to switch strike",
         variant: "destructive",
+        duration: 5000,
       });
     }
   };
@@ -343,6 +361,7 @@ const ScoringInterface = () => {
       toast({
         title: "Batsman Selected",
         description: getBatsmanName(playerId) + " is now batting",
+        duration: 5000,
       });
     } catch (err) {
       console.error("Error selecting batsman:", err);
@@ -350,6 +369,7 @@ const ScoringInterface = () => {
         title: "Error",
         description: "Failed to select batsman",
         variant: "destructive",
+        duration: 5000,
       });
     }
   };
@@ -394,6 +414,7 @@ const ScoringInterface = () => {
         toast({
           title: "Bowler Selected",
           description: getBowlerName(playerId) + " is now bowling",
+          duration: 5000,
         });
       } catch (err) {
         console.error("Error selecting bowler:", err);
@@ -401,6 +422,7 @@ const ScoringInterface = () => {
           title: "Error",
           description: "Failed to select bowler",
           variant: "destructive",
+          duration: 5000,
         });
       }
     }
@@ -448,7 +470,7 @@ const ScoringInterface = () => {
       await saveMatchEvent(event);
 
       if (!event.isWide && !event.isNoBall && 
-          currentInnings.currentBall === 5) {
+          currentInnings.currentBall === 0 && currentInnings.currentOver > 0) {
         openSelectBowlerModal();
       }
 
@@ -458,9 +480,12 @@ const ScoringInterface = () => {
 
       if (!noStrikeRotation && 
           (event.runs % 2 === 1 || 
-           (currentInnings.currentBall === 5 && !event.isWide && !event.isNoBall))) {
+           (currentInnings.currentBall === 0 && currentInnings.currentOver > 0 && !event.isWide && !event.isNoBall))) {
         await handleSwitchStrike();
       }
+      
+      // Update the current over index after a ball is processed
+      setCurrentOverIndex(currentInnings.currentOver);
 
     } catch (err) {
       console.error("Error processing score update:", err);
@@ -468,6 +493,7 @@ const ScoringInterface = () => {
         title: "Error",
         description: "Failed to update score",
         variant: "destructive",
+        duration: 5000,
       });
     }
   };
@@ -502,10 +528,22 @@ const ScoringInterface = () => {
   const oversDisplay = `${completedOvers}${ballsInCurrentOver > 0 ? '.' + ballsInCurrentOver : ''}`;
   const currentRunRate = currentInnings.totalRuns > 0 ? 
     (currentInnings.totalRuns / (parseFloat(oversDisplay) || 1)).toFixed(2) : '0.00';
+
+  const navigateToPreviousOver = () => {
+    if (currentOverIndex > 0) {
+      setCurrentOverIndex(currentOverIndex - 1);
+    }
+  };
+
+  const navigateToNextOver = () => {
+    if (currentOverIndex < currentInnings.overs.length - 1) {
+      setCurrentOverIndex(currentOverIndex + 1);
+    }
+  };
   
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Cricbuzz-style header */}
+      {/* Top bar */}
       <header className="bg-green-600 text-white sticky top-0 z-30">
         <div className="container px-2 py-2 mx-auto">
           <div className="flex items-center justify-between">
@@ -619,14 +657,17 @@ const ScoringInterface = () => {
             </div>
           </div>
           
-          {/* Current Over Display - Compact */}
+          {/* Current Over Display - Swipable */}
           <CurrentOverDisplay 
-            currentInnings={currentInnings}
+            innings={currentInnings}
+            currentOverIndex={currentOverIndex}
+            onPrev={navigateToPreviousOver}
+            onNext={navigateToNextOver}
             onHistoryClick={openOverHistoryModal}
           />
           
           {/* Players Info Section */}
-          <div className="grid gap-2 mb-2">
+          <div className="grid gap-2 mb-1">
             <BatsmenInfo 
               currentInnings={currentInnings}
               battingTeam={battingTeam}
@@ -645,7 +686,6 @@ const ScoringInterface = () => {
               onRunSelect={handleRunSelect}
               onExtrasClick={openExtrasModal}
               onWicketClick={openDismissalModal}
-              onCustomRunsClick={openRunsModal}
               onSwitchStrikeClick={handleSwitchStrike}
               onOverHistoryClick={openOverHistoryModal}
               disabled={needsInitialization}
@@ -762,6 +802,7 @@ const ScoringInterface = () => {
             toast({
               title: "Ball updated",
               description: "The ball has been updated successfully",
+              duration: 5000,
             });
           }}
         />
@@ -770,28 +811,32 @@ const ScoringInterface = () => {
   );
 };
 
-// Compact Current Over Display Component
+// Swipable Current Over Display Component
 const CurrentOverDisplay = ({ 
-  currentInnings,
+  innings,
+  currentOverIndex,
+  onPrev,
+  onNext,
   onHistoryClick
 }: { 
-  currentInnings: any;
+  innings: any;
+  currentOverIndex: number;
+  onPrev: () => void;
+  onNext: () => void;
   onHistoryClick: () => void;
 }) => {
-  const getCurrentOverBalls = () => {
-    if (!currentInnings.overs || currentInnings.overs.length === 0) {
+  const getOverBalls = (overIndex: number) => {
+    if (!innings.overs || innings.overs.length === 0 || !innings.overs[overIndex]) {
       return [];
     }
     
-    const currentOverIndex = currentInnings.currentBall === 0 && currentInnings.currentOver > 0
-      ? currentInnings.currentOver - 1
-      : currentInnings.currentOver;
-    
-    return currentInnings.overs[currentOverIndex]?.balls || [];
+    return innings.overs[overIndex]?.balls || [];
   };
   
-  const currentOverBalls = getCurrentOverBalls();
-  const emptyBallsCount = Math.max(0, 6 - currentOverBalls.length);
+  const overBalls = getOverBalls(currentOverIndex);
+  const emptyBallsCount = Math.max(0, 6 - overBalls.length);
+  const showPrev = currentOverIndex > 0;
+  const showNext = currentOverIndex < innings.overs.length - 1;
   
   const renderBallContent = (ball: any) => {
     if (ball.isWicket) return 'W';
@@ -817,40 +862,72 @@ const CurrentOverDisplay = ({
   return (
     <div className="bg-white rounded-md shadow-sm border p-2 mb-2">
       <div className="flex justify-between items-center mb-1.5">
-        <h3 className="text-xs font-medium text-gray-600">This Over</h3>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-6 px-2 text-xs text-green-700"
-          onClick={onHistoryClick}
-        >
-          <History className="h-3.5 w-3.5 mr-1" />
-          History
-        </Button>
+        <h3 className="text-xs font-medium text-gray-600">
+          {currentOverIndex === innings.currentOver ? "This Over" : `Over ${currentOverIndex + 1}`}
+        </h3>
+        <div className="flex items-center">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-6 px-2 text-xs text-green-700"
+            onClick={onHistoryClick}
+          >
+            <History className="h-3.5 w-3.5 mr-1" />
+            History
+          </Button>
+        </div>
       </div>
-      <div className="flex space-x-2 overflow-x-auto pb-1 scrollbar-none">
-        {currentOverBalls.map((ball: any, index: number) => (
-          <div 
-            key={index}
-            className={getBallClass(ball)}
+      
+      <div className="flex items-center">
+        {/* Previous button */}
+        {showPrev && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-gray-600 hover:text-green-700 hover:bg-green-50"
+            onClick={onPrev}
           >
-            {renderBallContent(ball)}
-          </div>
-        ))}
-        {Array.from({ length: emptyBallsCount }).map((_, index) => (
-          <div 
-            key={`empty-${index}`}
-            className="h-8 w-8 rounded-full flex items-center justify-center text-xs border border-gray-200 text-gray-300 flex-shrink-0"
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        )}
+        
+        {/* Balls */}
+        <div className="flex space-x-2 overflow-x-auto pb-1 scrollbar-none flex-grow justify-center">
+          {overBalls.map((ball: any, index: number) => (
+            <div 
+              key={index}
+              className={getBallClass(ball)}
+            >
+              {renderBallContent(ball)}
+            </div>
+          ))}
+          {Array.from({ length: emptyBallsCount }).map((_, index) => (
+            <div 
+              key={`empty-${index}`}
+              className="h-8 w-8 rounded-full flex items-center justify-center text-xs border border-gray-200 text-gray-300 flex-shrink-0"
+            >
+              •
+            </div>
+          ))}
+        </div>
+        
+        {/* Next button */}
+        {showNext && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-gray-600 hover:text-green-700 hover:bg-green-50"
+            onClick={onNext}
           >
-            •
-          </div>
-        ))}
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </div>
   );
 };
 
-// Compact Batsmen Info Component
+// Enhanced Batsmen Info Component with better highlighting
 const BatsmenInfo = ({ 
   currentInnings,
   battingTeam
@@ -913,12 +990,15 @@ const BatsmenInfo = ({
             key={index}
             className={cn(
               "px-3 py-2 flex items-center",
-              batsman.onStrike ? "bg-green-50/50" : ""
+              batsman.onStrike ? "bg-green-100 border-l-4 border-green-500" : ""
             )}
           >
             <div className="flex-1">
               <div className="flex items-center">
-                <span className="font-medium text-sm">
+                <span className={cn(
+                  "font-medium", 
+                  batsman.onStrike ? "text-green-700 font-semibold" : "text-sm"
+                )}>
                   {batsman.name}
                   {batsman.onStrike && <span className="ml-1 text-green-600">*</span>}
                 </span>
@@ -928,7 +1008,12 @@ const BatsmenInfo = ({
               </div>
             </div>
             <div className="text-right">
-              <div className="text-base font-semibold">{batsman.runs}</div>
+              <div className={cn(
+                "font-semibold tabular-nums",
+                batsman.onStrike ? "text-lg text-green-700" : "text-base"
+              )}>
+                {batsman.runs}
+              </div>
               <div className="text-xs text-gray-500">
                 {batsman.balls} balls
               </div>
@@ -1016,13 +1101,12 @@ const BowlerInfo = ({
   );
 };
 
-// Redesigned Scoring Buttons Component
+// Redesigned Scoring Buttons Component (removed custom runs button)
 const ScoringButtons = ({ 
   selectedRun,
   onRunSelect,
   onExtrasClick,
   onWicketClick,
-  onCustomRunsClick,
   onSwitchStrikeClick,
   onOverHistoryClick,
   disabled = false
@@ -1031,7 +1115,6 @@ const ScoringButtons = ({
   onRunSelect: (run: number) => void;
   onExtrasClick: () => void;
   onWicketClick: () => void;
-  onCustomRunsClick: () => void;
   onSwitchStrikeClick: () => void;
   onOverHistoryClick: () => void;
   disabled?: boolean;
@@ -1041,7 +1124,7 @@ const ScoringButtons = ({
   return (
     <div className="space-y-2 relative mb-4">
       {disabled && (
-        <div className="absolute inset-0 bg-white/70 bg-white/70 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
+        <div className="absolute inset-0 bg-white/70 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
           <div className="text-center p-3">
             <h3 className="text-base font-medium mb-1">Innings Setup Required</h3>
             <p className="text-gray-500 text-sm">Please select batsmen and bowler to start</p>
@@ -1067,7 +1150,7 @@ const ScoringButtons = ({
         ))}
       </div>
       
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2">
         <Button
           variant="outline"
           className="bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 h-10 text-sm"
@@ -1075,14 +1158,6 @@ const ScoringButtons = ({
           disabled={disabled}
         >
           Extras
-        </Button>
-        <Button
-          variant="outline"
-          className="h-10 text-sm"
-          onClick={onCustomRunsClick}
-          disabled={disabled}
-        >
-          Custom Runs
         </Button>
       </div>
       
