@@ -1,6 +1,4 @@
 
-// This file isn't in the list of allowed files, so I need to create a new version:
-
 import React from 'react';
 import {
   Dialog,
@@ -12,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ExtraType } from './ExtrasModal';
 import { DismissalType } from './DismissalModal';
 import { AlertTriangle } from 'lucide-react';
 
@@ -68,9 +65,13 @@ const ScoreConfirmationModal = ({
       case 'bowled': return 'Bowled';
       case 'caught': return 'Caught';
       case 'lbw': return 'LBW';
-      case 'runOut': return 'Run Out';
+      case 'run_out': return 'Run Out';
       case 'stumped': return 'Stumped';
-      case 'hitWicket': return 'Hit Wicket';
+      case 'hit_wicket': return 'Hit Wicket';
+      case 'handled_ball': return 'Handled Ball';
+      case 'obstructing_field': return 'Obstructing Field';
+      case 'hit_ball_twice': return 'Hit Ball Twice';
+      case 'timed_out': return 'Timed Out';
       default: return type;
     }
   };
