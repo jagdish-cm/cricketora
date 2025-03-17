@@ -15,7 +15,6 @@ import { Switch } from "@/components/ui/switch";
 
 export interface RunsInfo {
   runs: number;
-  isNonInteger?: boolean;
   isStrikeRotated?: boolean;
 }
 
@@ -33,21 +32,18 @@ const RunsInputModal = ({
   defaultValue = 0
 }: RunsInputModalProps) => {
   const [runs, setRuns] = useState<string>(defaultValue.toString());
-  const [isNonInteger, setIsNonInteger] = useState(false);
   const [rotateStrike, setRotateStrike] = useState(true);
   
   const handleSubmit = () => {
-    const parsedRuns = parseFloat(runs);
+    const parsedRuns = parseInt(runs);
     if (!isNaN(parsedRuns)) {
       onSubmit({
         runs: parsedRuns,
-        isNonInteger: isNonInteger && parsedRuns % 1 !== 0,
         isStrikeRotated: rotateStrike
       });
       
       // Reset form
       setRuns(defaultValue.toString());
-      setIsNonInteger(false);
       setRotateStrike(true);
       onClose();
     }
@@ -56,7 +52,6 @@ const RunsInputModal = ({
   const handleCancel = () => {
     // Reset form
     setRuns(defaultValue.toString());
-    setIsNonInteger(false);
     setRotateStrike(true);
     onClose();
   };
@@ -75,24 +70,13 @@ const RunsInputModal = ({
             <Input
               id="runs"
               type="number"
-              step={isNonInteger ? "0.1" : "1"}
+              step="1"
               min="0"
               max="99"
               value={runs}
               onChange={(e) => setRuns(e.target.value)}
               placeholder="Enter runs"
             />
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="nonInteger"
-              checked={isNonInteger}
-              onCheckedChange={setIsNonInteger}
-            />
-            <Label htmlFor="nonInteger" className="flex-grow cursor-pointer">
-              Allow non-integer runs (e.g., 1/3, 2/3)
-            </Label>
           </div>
           
           <div className="flex items-center space-x-2">
@@ -111,7 +95,7 @@ const RunsInputModal = ({
           <Button variant="outline" onClick={handleCancel}>Cancel</Button>
           <Button 
             onClick={handleSubmit} 
-            disabled={isNaN(parseFloat(runs))}
+            disabled={isNaN(parseInt(runs))}
           >
             Confirm
           </Button>

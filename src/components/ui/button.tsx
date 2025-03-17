@@ -50,7 +50,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {typeof children === 'string' ? (
-          <span className="truncate overflow-hidden">{children}</span>
+          <span className="truncate">{children}</span>
         ) : (
           children
         )}

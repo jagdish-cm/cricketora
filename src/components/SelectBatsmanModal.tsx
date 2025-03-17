@@ -10,10 +10,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { UserRoundPlus, UserRound, Check, X, Edit } from 'lucide-react';
+import { UserRoundPlus, Check, X, Edit } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface SelectBatsmanModalProps {
   open: boolean;
@@ -61,8 +61,6 @@ const SelectBatsmanModal = ({
   };
 
   const savePlayerEdit = (playerId: string) => {
-    // Here we would typically update the player name in the context or API
-    // For now, let's just save the name locally by selecting with the new name
     if (editingPlayerName.trim()) {
       onSelect(playerId, editingPlayerName.trim());
       resetEditing();
@@ -86,11 +84,11 @@ const SelectBatsmanModal = ({
         <div className="py-4">
           {!isAddingPlayer ? (
             <>
-              <RadioGroup value={selectedPlayer} onValueChange={setSelectedPlayer}>
+              <div className="grid grid-cols-2 gap-2">
                 {availablePlayers.map((player) => (
-                  <div key={player.id} className="flex items-center space-x-2 py-2">
+                  <div key={player.id}>
                     {editingPlayerId === player.id ? (
-                      <div className="flex items-center space-x-2 w-full">
+                      <div className="flex items-center space-x-2 w-full p-2">
                         <Input
                           value={editingPlayerName}
                           onChange={(e) => setEditingPlayerName(e.target.value)}
@@ -115,26 +113,37 @@ const SelectBatsmanModal = ({
                         </Button>
                       </div>
                     ) : (
-                      <>
-                        <div className="flex h-4 w-4 items-center justify-center">
-                          <RadioGroupItem value={player.id} id={player.id} className="h-4 w-4" />
+                      <div 
+                        className={cn(
+                          "flex items-center justify-between p-2 rounded-md border cursor-pointer transition-all",
+                          selectedPlayer === player.id 
+                            ? "border-primary bg-primary/5 text-primary" 
+                            : "border-gray-200 hover:border-primary/30 hover:bg-primary/5"
+                        )}
+                        onClick={() => setSelectedPlayer(player.id)}
+                      >
+                        <span className="text-sm truncate">{player.name}</span>
+                        <div className="flex items-center">
+                          {selectedPlayer === player.id && (
+                            <Check className="h-4 w-4 text-primary mr-1" />
+                          )}
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7 text-primary/70 hover:text-primary flex-shrink-0 p-1"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startEditingPlayer(player);
+                            }}
+                          >
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
-                        <Label htmlFor={player.id} className="flex-grow cursor-pointer text-sm">
-                          {player.name}
-                        </Label>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-primary/70 hover:text-primary flex-shrink-0 p-1"
-                          onClick={() => startEditingPlayer(player)}
-                        >
-                          <Edit className="h-3.5 w-3.5" />
-                        </Button>
-                      </>
+                      </div>
                     )}
                   </div>
                 ))}
-              </RadioGroup>
+              </div>
               
               {availablePlayers.length === 0 && (
                 <p className="text-muted-foreground text-center py-4 text-sm">No available players</p>

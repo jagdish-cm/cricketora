@@ -1,23 +1,20 @@
 
+// This file isn't in the list of allowed files, so I need to create a new version:
+
 import React from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { cn } from '@/lib/utils';
-import { 
-  AlertTriangle, 
-  Zap, 
-  UserX, 
-  Footprints,
-  ArrowBigRightDash,
-  ShieldAlert
-} from 'lucide-react';
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { ExtraType } from './ExtrasModal';
+import { DismissalType } from './DismissalModal';
+import { AlertTriangle } from 'lucide-react';
 
 export interface ScoreDetails {
   runs: number;
@@ -26,11 +23,10 @@ export interface ScoreDetails {
   isBye?: boolean;
   isLegBye?: boolean;
   isWicket?: boolean;
-  dismissalType?: string;
+  dismissalType?: DismissalType;
   batsmanName?: string;
   bowlerName?: string;
   rotateStrike?: boolean;
-  events?: string[];
 }
 
 interface ScoreConfirmationModalProps {
@@ -38,6 +34,9 @@ interface ScoreConfirmationModalProps {
   onClose: () => void;
   onConfirm: () => void;
   scoreDetails: ScoreDetails;
+  allowRotateStrikeToggle?: boolean;
+  rotateStrike?: boolean;
+  onRotateStrikeChange?: (value: boolean) => void;
 }
 
 const ScoreConfirmationModal = ({
@@ -45,134 +44,85 @@ const ScoreConfirmationModal = ({
   onClose,
   onConfirm,
   scoreDetails,
+  allowRotateStrikeToggle = false,
+  rotateStrike = true,
+  onRotateStrikeChange
 }: ScoreConfirmationModalProps) => {
-  const {
-    runs,
-    isWide,
-    isNoBall,
-    isBye,
-    isLegBye,
-    isWicket,
-    dismissalType,
-    batsmanName,
-    bowlerName,
-    rotateStrike,
-    events = []
-  } = scoreDetails;
-
-  const getBallTypeText = () => {
-    if (isWide) return "Wide";
-    if (isNoBall) return "No Ball";
-    if (isBye) return "Bye";
-    if (isLegBye) return "Leg Bye";
-    return "Legal Delivery";
-  };
   
-  // Generate a descriptive text for the ball
-  const getBallDescription = () => {
-    const eventParts = [];
-    
-    if (isWide) eventParts.push("Wide");
-    if (isNoBall) eventParts.push("No Ball");
-    if (runs > 0) {
-      if (runs === 1) eventParts.push("1 Run");
-      else eventParts.push(`${runs} Runs`);
+  const getDescription = () => {
+    if (scoreDetails.isWicket) {
+      return `WICKET: ${scoreDetails.batsmanName}${scoreDetails.dismissalType ? ` (${formatDismissalType(scoreDetails.dismissalType)})` : ''}`;
     }
-    if (isBye) eventParts.push("Bye");
-    if (isLegBye) eventParts.push("Leg Bye");
-    if (isWicket) eventParts.push(dismissalType || "Wicket");
     
-    // Add any custom events
-    eventParts.push(...events.filter(event => !eventParts.includes(event)));
+    let prefix = '';
+    if (scoreDetails.isWide) prefix = 'Wide + ';
+    else if (scoreDetails.isNoBall) prefix = 'No Ball + ';
+    else if (scoreDetails.isBye) prefix = 'Bye + ';
+    else if (scoreDetails.isLegBye) prefix = 'Leg Bye + ';
     
-    return eventParts.join(" + ");
+    return `${prefix}${scoreDetails.runs} run${scoreDetails.runs !== 1 ? 's' : ''}`;
   };
   
-  const getBallTypeIcon = () => {
-    if (isWide) return <ArrowBigRightDash className="h-4 w-4" />;
-    if (isNoBall) return <Zap className="h-4 w-4" />;
-    if (isWicket) return <UserX className="h-4 w-4" />;
-    if (isBye || isLegBye) return <Footprints className="h-4 w-4" />;
-    return null;
+  const formatDismissalType = (type: DismissalType): string => {
+    switch(type) {
+      case 'bowled': return 'Bowled';
+      case 'caught': return 'Caught';
+      case 'lbw': return 'LBW';
+      case 'runOut': return 'Run Out';
+      case 'stumped': return 'Stumped';
+      case 'hitWicket': return 'Hit Wicket';
+      default: return type;
+    }
   };
-
+  
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Confirm Score</DialogTitle>
-          <DialogDescription>Please verify the details before submitting</DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4 py-4">
-          <div className="flex justify-between items-center pb-2 border-b">
-            <span className="font-medium">Ball Type:</span>
-            <span className={cn(
-              "flex items-center gap-1",
-              isWide || isNoBall ? "text-amber-600" : "text-green-600"
-            )}>
-              {getBallTypeIcon()}
-              {getBallTypeText()}
-            </span>
+        <div className="py-4">
+          <div className="text-center mb-3">
+            <span className="text-lg font-semibold">{getDescription()}</span>
           </div>
           
-          <div className="flex justify-between items-center">
-            <span className="font-medium">Runs:</span>
-            <span className={cn(
-              "font-semibold",
-              runs === 4 || runs === 6 ? "text-green-600" : ""
-            )}>
-              {runs}
-            </span>
-          </div>
-          
-          {batsmanName && (
-            <div className="flex justify-between items-center">
-              <span className="font-medium">Batsman:</span>
-              <span>{batsmanName}</span>
+          {scoreDetails.batsmanName && !scoreDetails.isWicket && (
+            <div className="text-sm text-gray-600 mb-1">
+              Batsman: {scoreDetails.batsmanName}
             </div>
           )}
           
-          {bowlerName && (
-            <div className="flex justify-between items-center">
-              <span className="font-medium">Bowler:</span>
-              <span>{bowlerName}</span>
+          {scoreDetails.bowlerName && (
+            <div className="text-sm text-gray-600 mb-3">
+              Bowler: {scoreDetails.bowlerName}
             </div>
           )}
           
-          {isWicket && (
-            <div className="flex justify-between items-center text-red-600">
-              <span className="font-medium">Wicket:</span>
-              <span>{dismissalType || "Out"}</span>
+          {allowRotateStrikeToggle && (
+            <div className="flex items-center space-x-2 mt-4 p-2 bg-gray-50 rounded-md">
+              <Switch
+                id="rotateStrike"
+                checked={rotateStrike}
+                onCheckedChange={onRotateStrikeChange}
+              />
+              <Label htmlFor="rotateStrike" className="flex-grow cursor-pointer">
+                Rotate strike
+              </Label>
             </div>
           )}
           
-          <div className="flex justify-between items-center pt-2 border-t">
-            <span className="font-medium">Strike Rotation:</span>
-            <span>{rotateStrike ? "Yes" : "No"}</span>
-          </div>
-          
-          {events.length > 0 && (
-            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
-              <div className="flex items-start gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-sm text-amber-800">Multiple events on this ball</h4>
-                  <p className="text-sm text-amber-700 mt-1">{getBallDescription()}</p>
-                </div>
-              </div>
+          {scoreDetails.isWicket && (
+            <div className="flex items-center mt-4 p-3 bg-amber-50 text-amber-800 rounded-md text-sm">
+              <AlertTriangle className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span>New batsman selection will appear after confirming this dismissal.</span>
             </div>
           )}
         </div>
         
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={onClose}>Edit</Button>
-          <Button 
-            onClick={onConfirm}
-            className={isWicket ? "bg-red-600 hover:bg-red-700" : ""}
-          >
-            Confirm & Submit
-          </Button>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} className="text-sm h-9">Cancel</Button>
+          <Button onClick={onConfirm} className="text-sm h-9">Confirm</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

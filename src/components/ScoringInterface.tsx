@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMatch, BallEvent, Player } from '@/context/MatchContext';
@@ -627,7 +626,7 @@ const ScoringInterface = () => {
           />
           
           {/* Players Info Section */}
-          <div className="grid gap-2 mt-2">
+          <div className="grid gap-2 mb-2">
             <BatsmenInfo 
               currentInnings={currentInnings}
               battingTeam={battingTeam}
@@ -640,7 +639,7 @@ const ScoringInterface = () => {
           </div>
           
           {/* Scoring Pad */}
-          <div className="mt-auto pt-3">
+          <div className="pt-1">
             <ScoringButtons 
               selectedRun={selectedRun}
               onRunSelect={handleRunSelect}
@@ -707,6 +706,9 @@ const ScoringInterface = () => {
         onClose={closeScoreConfirmation}
         onConfirm={confirmScoreSubmission}
         scoreDetails={pendingScoreDetails || {runs: 0}}
+        allowRotateStrikeToggle={true}
+        rotateStrike={!noStrikeRotation}
+        onRotateStrikeChange={(value) => setNoStrikeRotation(!value)}
       />
       
       <SelectBatsmanModal 
@@ -1039,7 +1041,7 @@ const ScoringButtons = ({
   return (
     <div className="space-y-2 relative mb-4">
       {disabled && (
-        <div className="absolute inset-0 bg-white/70 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
+        <div className="absolute inset-0 bg-white/70 bg-white/70 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
           <div className="text-center p-3">
             <h3 className="text-base font-medium mb-1">Innings Setup Required</h3>
             <p className="text-gray-500 text-sm">Please select batsmen and bowler to start</p>
