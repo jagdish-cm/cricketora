@@ -159,7 +159,6 @@ const ScoringInterface = () => {
       
       setPendingBallEvent(ballEvent);
       
-      // Default rotation based on ICC rules
       const willRotateStrike = run % 2 === 1;
       
       setPendingScoreDetails({
@@ -185,7 +184,6 @@ const ScoringInterface = () => {
     
     setPendingBallEvent(ballEvent);
     
-    // Default rotation based on ICC rules
     const willRotateStrike = runsInfo.runs % 2 === 1;
     setNoStrikeRotation(!willRotateStrike);
     
@@ -224,7 +222,6 @@ const ScoringInterface = () => {
 
     setPendingBallEvent(ballEvent);
     
-    // Default rotation based on ICC rules
     const willRotateStrike = extrasInfo.runs % 2 === 1;
     setNoStrikeRotation(!willRotateStrike);
     
@@ -484,7 +481,6 @@ const ScoringInterface = () => {
         await handleSwitchStrike();
       }
       
-      // Update the current over index after a ball is processed
       setCurrentOverIndex(currentInnings.currentOver);
 
     } catch (err) {
@@ -543,7 +539,6 @@ const ScoringInterface = () => {
   
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Top bar */}
       <header className="bg-green-600 text-white sticky top-0 z-30">
         <div className="container px-2 py-2 mx-auto">
           <div className="flex items-center justify-between">
@@ -623,7 +618,6 @@ const ScoringInterface = () => {
         </div>
       </header>
 
-      {/* Match Info Bar */}
       <div className="bg-white border-b py-2 px-3 shadow-sm">
         <div className="flex justify-between items-center text-sm">
           <div className="font-medium">{match.team1.name} vs {match.team2.name}</div>
@@ -635,7 +629,6 @@ const ScoringInterface = () => {
       
       <PageTransition className="flex-grow flex flex-col max-w-full">
         <div className="container mx-auto px-2 py-2 flex-grow flex flex-col">
-          {/* Score Summary - Cricbuzz Style */}
           <div className="bg-white rounded-md shadow-sm border mb-2 overflow-hidden">
             <div className="bg-green-600 text-white px-3 py-3">
               <div className="flex justify-between items-baseline">
@@ -657,7 +650,6 @@ const ScoringInterface = () => {
             </div>
           </div>
           
-          {/* Current Over Display - Swipable */}
           <CurrentOverDisplay 
             innings={currentInnings}
             currentOverIndex={currentOverIndex}
@@ -666,7 +658,6 @@ const ScoringInterface = () => {
             onHistoryClick={openOverHistoryModal}
           />
           
-          {/* Players Info Section */}
           <div className="grid gap-2 mb-1">
             <BatsmenInfo 
               currentInnings={currentInnings}
@@ -679,7 +670,6 @@ const ScoringInterface = () => {
             />
           </div>
           
-          {/* Scoring Pad */}
           <div className="pt-1">
             <ScoringButtons 
               selectedRun={selectedRun}
@@ -694,7 +684,6 @@ const ScoringInterface = () => {
         </div>
       </PageTransition>
 
-      {/* Modals */}
       <RunsInputModal 
         open={isRunsModalOpen} 
         onClose={closeRunsModal}
@@ -811,7 +800,6 @@ const ScoringInterface = () => {
   );
 };
 
-// Swipable Current Over Display Component
 const CurrentOverDisplay = ({ 
   innings,
   currentOverIndex,
@@ -862,6 +850,8 @@ const CurrentOverDisplay = ({
   const showPrev = currentOverIndex > 0;
   const showNext = currentOverIndex < (innings.overs?.length || 0) - 1;
   
+  const startIndex = currentOverIndex;
+  
   return (
     <div className="bg-white rounded-md shadow-sm border p-2 mb-2">
       <div className="flex justify-between items-center mb-1.5">
@@ -881,18 +871,14 @@ const CurrentOverDisplay = ({
         </div>
       </div>
       
-      <Carousel opts={{ loop: false, align: "center" }} className="w-full" setApi={(api) => {
-        if (currentOverIndex !== -1) {
-          api.goTo(currentOverIndex);
-        }
-      }}>
+      <Carousel opts={{ loop: false, align: "center", startIndex }} className="w-full">
         <CarouselContent>
           {availableOvers.map((overIndex) => {
             const overBalls = getOverBalls(overIndex);
             const emptyBallsCount = Math.max(0, 6 - overBalls.length);
             
             return (
-              <CarouselItem key={overIndex} className="basis-full" onClick={() => overIndex !== currentOverIndex && onPrev()}>
+              <CarouselItem key={overIndex} className="basis-full">
                 <div className="flex justify-center space-x-2 pb-1">
                   {overBalls.map((ball: any, index: number) => (
                     <div 
@@ -922,7 +908,6 @@ const CurrentOverDisplay = ({
   );
 };
 
-// Enhanced Batsmen Info Component with better highlighting
 const BatsmenInfo = ({ 
   currentInnings,
   battingTeam
@@ -1020,7 +1005,6 @@ const BatsmenInfo = ({
   );
 };
 
-// Compact Bowler Info Component
 const BowlerInfo = ({ 
   currentInnings,
   bowlingTeam
@@ -1096,7 +1080,6 @@ const BowlerInfo = ({
   );
 };
 
-// Redesigned Scoring Buttons Component (removed custom runs button)
 const ScoringButtons = ({ 
   selectedRun,
   onRunSelect,
@@ -1192,4 +1175,3 @@ const ScoringButtons = ({
 };
 
 export default ScoringInterface;
-
