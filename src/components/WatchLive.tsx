@@ -43,6 +43,14 @@ const WatchLive = () => {
       // Load the match with the provided ID in viewer mode
       await loadMatch(formattedMatchId);
       
+      // Show success toast
+      toast({
+        title: "Match found",
+        description: "Loading match data...",
+        variant: "default", 
+        className: "bg-green-100 border-green-300 text-green-800"
+      });
+      
       // Navigate to the view-only scoring interface
       navigate(`/watch/${formattedMatchId}`);
     } catch (err: any) {
@@ -51,6 +59,7 @@ const WatchLive = () => {
         title: "Error",
         description: err.message || 'Match not found or cannot be accessed',
         variant: "destructive",
+        className: "bg-red-100 border-red-300 text-red-800"
       });
     }
   };
@@ -83,14 +92,14 @@ const WatchLive = () => {
               onClick={() => navigate('/')}
               disabled={isLoading}
               size={isMobile ? "sm" : "default"}
-              className="text-xs sm:text-sm px-2 sm:px-4"
+              className="text-xs sm:text-sm px-2 sm:px-4 flex items-center"
             />
             <NextButton 
               type="submit"
               isLoading={isLoading}
               iconRight={<Eye className="h-3 w-3 sm:h-4 sm:w-4" />}
               size={isMobile ? "sm" : "default"}
-              className="text-xs sm:text-sm px-2 sm:px-4"
+              className="text-xs sm:text-sm px-2 sm:px-4 flex items-center"
             >
               Watch Live
             </NextButton>

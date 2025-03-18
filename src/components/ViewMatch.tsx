@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMatch, Innings, Team, Player, BatsmanStats, BowlerStats } from '@/context/MatchContext';
@@ -173,6 +172,7 @@ const ViewMatch = () => {
             <ScorecardView 
               match={match}
               isMobile={isMobile}  
+              currentInnings={match.currentInnings}
             />
           </TabsContent>
         </Tabs>
@@ -181,10 +181,11 @@ const ViewMatch = () => {
           <Button 
             variant="outline" 
             onClick={() => navigate('/watch-live')}
-            className="text-xs sm:text-sm px-2 sm:px-4"
+            className="text-xs sm:text-sm px-2 sm:px-4 flex items-center"
             size={isMobile ? "sm" : "default"}
           >
-            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> Back
+            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> 
+            <span>Back</span>
           </Button>
           
           <Button 
@@ -201,10 +202,11 @@ const ViewMatch = () => {
                 alert('Link copied to clipboard!');
               }
             }}
-            className="text-xs sm:text-sm px-2 sm:px-4"
+            className="text-xs sm:text-sm px-2 sm:px-4 flex items-center"
             size={isMobile ? "sm" : "default"}
           >
-            <Share2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> Share
+            <Share2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> 
+            <span>Share</span>
           </Button>
         </div>
       </div>
@@ -386,8 +388,8 @@ const SummaryView = ({ match, currentInnings, battingTeam, bowlingTeam, isMobile
   );
 };
 
-const ScorecardView = ({ match, isMobile }: any) => {
-  const [selectedInnings, setSelectedInnings] = useState(match.currentInnings);
+const ScorecardView = ({ match, isMobile, currentInnings }: any) => {
+  const [selectedInnings, setSelectedInnings] = useState(currentInnings);
   
   if (match.innings.length === 0) {
     return (
@@ -405,13 +407,21 @@ const ScorecardView = ({ match, isMobile }: any) => {
     return Object.entries(innings.batsmanStats)
       .map(([playerId, stats]: [string, any]) => {
         const player = battingTeam.players.find((p: Player) => p.id === playerId);
+        const isOnStrike = playerId === innings.onStrike;
         return { 
           ...stats, 
           id: playerId,
-          name: player ? player.name : 'Unknown Player'
+          name: player ? player.name : 'Unknown Player',
+          isOnStrike
         };
       })
       .sort((a, b) => {
+        const aIsCurrent = innings.currentBatsmen.includes(a.id);
+        const bIsCurrent = innings.currentBatsmen.includes(b.id);
+        
+        if (aIsCurrent && !bIsCurrent) return -1;
+        if (!aIsCurrent && bIsCurrent) return 1;
+        
         return a.id.localeCompare(b.id);
       });
   };
@@ -420,10 +430,12 @@ const ScorecardView = ({ match, isMobile }: any) => {
     return Object.entries(innings.bowlerStats)
       .map(([playerId, stats]: [string, any]) => {
         const player = bowlingTeam.players.find((p: Player) => p.id === playerId);
+        const isCurrentBowler = playerId === innings.currentBowler;
         return { 
           ...stats, 
           id: playerId,
-          name: player ? player.name : 'Unknown Player'
+          name: player ? player.name : 'Unknown Player',
+          isCurrentBowler
         };
       })
       .sort((a, b) => {
@@ -520,10 +532,14 @@ const ScorecardView = ({ match, isMobile }: any) => {
               </TableHeader>
               <TableBody>
                 {batsmen.map((batsman) => (
-                  <TableRow key={batsman.id}>
+                  <TableRow key={batsman.id} className={innings.currentBatsmen.includes(batsman.id) ? (batsman.isOnStrike ? "bg-green-50" : "bg-blue-50") : ""}>
                     <TableCell className="py-1 sm:py-2">
                       <div>
-                        <div className="font-medium text-xs sm:text-sm truncate max-w-[110px] sm:max-w-none">{batsman.name}</div>
+                        <div className="font-medium text-xs sm:text-sm truncate max-w-[110px] sm:max-w-none flex items-center">
+                          {batsman.name}
+                          {batsman.isOnStrike && <span className="ml-1 text-green-600">*</span>}
+                          {innings.currentBatsmen.includes(batsman.id) && !batsman.isOnStrike && <span className="ml-1 text-blue-600">•</span>}
+                        </div>
                         <div className="text-[10px] sm:text-xs text-gray-500 truncate max-w-[110px] sm:max-w-none">{getDismissalText(batsman)}</div>
                       </div>
                     </TableCell>
@@ -585,9 +601,12 @@ const ScorecardView = ({ match, isMobile }: any) => {
               </TableHeader>
               <TableBody>
                 {bowlers.map((bowler) => (
-                  <TableRow key={bowler.id}>
+                  <TableRow key={bowler.id} className={bowler.isCurrentBowler ? "bg-amber-50" : ""}>
                     <TableCell className="font-medium text-xs sm:text-sm py-1 sm:py-2 whitespace-nowrap">
-                      <span className="truncate max-w-[110px] sm:max-w-none block">{bowler.name}</span>
+                      <div className="flex items-center">
+                        <span className="truncate max-w-[110px] sm:max-w-none">{bowler.name}</span>
+                        {bowler.isCurrentBowler && <span className="ml-1 text-amber-600">•</span>}
+                      </div>
                     </TableCell>
                     <TableCell className="text-right text-xs sm:text-sm py-1 sm:py-2">{bowler.overs.toFixed(1)}</TableCell>
                     <TableCell className="text-right text-xs sm:text-sm py-1 sm:py-2">{bowler.maidens}</TableCell>
