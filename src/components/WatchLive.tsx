@@ -34,7 +34,7 @@ const WatchLive = () => {
       await loadMatch(matchId.toUpperCase());
       
       // Navigate to the view-only scoring interface
-      navigate('/view-match');
+      navigate(`/watch/${matchId.toUpperCase()}`);
     } catch (err: any) {
       // Error handling is done in the context
       console.error('Failed to load match for viewing', err);

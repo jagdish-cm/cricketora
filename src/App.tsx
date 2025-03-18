@@ -10,6 +10,7 @@ import MatchSetup from './components/MatchSetup';
 import ScoringInterface from './components/ScoringInterface';
 import WatchLive from './components/WatchLive';
 import ResumeMatch from './components/ResumeMatch';
+import ViewMatch from './components/ViewMatch';
 import NotFound from './pages/NotFound';
 import AppTopBar from './components/AppTopBar';
 
@@ -36,8 +37,9 @@ function App() {
             <Route path="/setup" element={<MatchSetup />} />
             <Route path="/resume-match" element={<ResumeMatch />} />
             <Route path="/scoring" element={<ScoringInterface />} />
-            <Route path="/watch/:matchId" element={<WatchLive />} />
+            <Route path="/watch/:matchId" element={<ViewMatch />} />
             <Route path="/watch-live" element={<WatchLive />} />
+            <Route path="/view-match" element={<ViewMatch />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
