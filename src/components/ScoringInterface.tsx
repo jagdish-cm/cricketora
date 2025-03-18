@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMatch, BallEvent, Player } from '@/context/MatchContext';
@@ -39,6 +38,7 @@ import EditBallModal from './EditBallModal';
 import OverHistoryModal from './OverHistoryModal';
 import { useDisclosure } from '@/hooks/use-disclosure';
 import { useInningsInit } from '@/hooks/use-innings-init';
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 
 const ScoringInterface = () => {
   const navigate = useNavigate();
@@ -833,11 +833,6 @@ const CurrentOverDisplay = ({
     return innings.overs[overIndex]?.balls || [];
   };
   
-  const overBalls = getOverBalls(currentOverIndex);
-  const emptyBallsCount = Math.max(0, 6 - overBalls.length);
-  const showPrev = currentOverIndex > 0;
-  const showNext = currentOverIndex < innings.overs.length - 1;
-  
   const renderBallContent = (ball: any) => {
     if (ball.isWicket) return 'W';
     if (ball.isWide) return 'Wd';
@@ -858,6 +853,14 @@ const CurrentOverDisplay = ({
       "bg-gray-100 border-gray-300 text-gray-700"
     );
   };
+
+  const availableOvers = Array.from(
+    { length: innings.overs ? innings.overs.length : 0 },
+    (_, i) => i
+  );
+  
+  const showPrev = currentOverIndex > 0;
+  const showNext = currentOverIndex < (innings.overs?.length || 0) - 1;
   
   return (
     <div className="bg-white rounded-md shadow-sm border p-2 mb-2">
@@ -878,51 +881,43 @@ const CurrentOverDisplay = ({
         </div>
       </div>
       
-      <div className="flex items-center">
-        {/* Previous button */}
-        {showPrev && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-gray-600 hover:text-green-700 hover:bg-green-50"
-            onClick={onPrev}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-        )}
-        
-        {/* Balls */}
-        <div className="flex space-x-2 overflow-x-auto pb-1 scrollbar-none flex-grow justify-center">
-          {overBalls.map((ball: any, index: number) => (
-            <div 
-              key={index}
-              className={getBallClass(ball)}
-            >
-              {renderBallContent(ball)}
-            </div>
-          ))}
-          {Array.from({ length: emptyBallsCount }).map((_, index) => (
-            <div 
-              key={`empty-${index}`}
-              className="h-8 w-8 rounded-full flex items-center justify-center text-xs border border-gray-200 text-gray-300 flex-shrink-0"
-            >
-              •
-            </div>
-          ))}
-        </div>
-        
-        {/* Next button */}
-        {showNext && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-gray-600 hover:text-green-700 hover:bg-green-50"
-            onClick={onNext}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
+      <Carousel opts={{ loop: false, align: "center" }} className="w-full" setApi={(api) => {
+        if (currentOverIndex !== -1) {
+          api.goTo(currentOverIndex);
+        }
+      }}>
+        <CarouselContent>
+          {availableOvers.map((overIndex) => {
+            const overBalls = getOverBalls(overIndex);
+            const emptyBallsCount = Math.max(0, 6 - overBalls.length);
+            
+            return (
+              <CarouselItem key={overIndex} className="basis-full" onClick={() => overIndex !== currentOverIndex && onPrev()}>
+                <div className="flex justify-center space-x-2 pb-1">
+                  {overBalls.map((ball: any, index: number) => (
+                    <div 
+                      key={index}
+                      className={getBallClass(ball)}
+                    >
+                      {renderBallContent(ball)}
+                    </div>
+                  ))}
+                  {Array.from({ length: emptyBallsCount }).map((_, index) => (
+                    <div 
+                      key={`empty-${index}`}
+                      className="h-8 w-8 rounded-full flex items-center justify-center text-xs border border-gray-200 text-gray-300 flex-shrink-0"
+                    >
+                      •
+                    </div>
+                  ))}
+                </div>
+              </CarouselItem>
+            );
+          })}
+        </CarouselContent>
+        {showPrev && <CarouselPrevious onClick={onPrev} />}
+        {showNext && <CarouselNext onClick={onNext} />}
+      </Carousel>
     </div>
   );
 };
@@ -1197,3 +1192,4 @@ const ScoringButtons = ({
 };
 
 export default ScoringInterface;
+
