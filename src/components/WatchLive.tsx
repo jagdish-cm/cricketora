@@ -12,12 +12,14 @@ import {
 } from '@/components/ui-components';
 import { toast } from '@/hooks/use-toast';
 import { Eye } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const WatchLive = () => {
   const navigate = useNavigate();
   const { loadMatch, isLoading } = useMatch();
   const [matchId, setMatchId] = useState('');
   const [matchIdError, setMatchIdError] = useState('');
+  const isMobile = useIsMobile();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +62,7 @@ const WatchLive = () => {
         subtitle="Enter the match ID to follow the live score"
       />
       
-      <GlassCard className="p-6 w-full max-w-md mx-auto">
+      <GlassCard className="p-4 sm:p-6 w-full max-w-md mx-auto">
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormInput
             label="Match ID"
@@ -76,15 +78,19 @@ const WatchLive = () => {
             className="uppercase text-center font-mono tracking-wider"
           />
           
-          <div className="flex justify-between pt-2">
+          <div className="flex justify-between pt-2 gap-2">
             <BackButton
               onClick={() => navigate('/')}
               disabled={isLoading}
+              size={isMobile ? "sm" : "default"}
+              className="text-xs sm:text-sm px-2 sm:px-4"
             />
             <NextButton 
               type="submit"
               isLoading={isLoading}
-              iconRight={<Eye className="h-4 w-4" />}
+              iconRight={<Eye className="h-3 w-3 sm:h-4 sm:w-4" />}
+              size={isMobile ? "sm" : "default"}
+              className="text-xs sm:text-sm px-2 sm:px-4"
             >
               Watch Live
             </NextButton>

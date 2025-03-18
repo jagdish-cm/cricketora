@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMatch, Innings, Team, Player, BatsmanStats, BowlerStats } from '@/context/MatchContext';
@@ -12,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft, BookOpen, List, PlayCircle, Share2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const ViewMatch = () => {
   const navigate = useNavigate();
@@ -20,6 +22,7 @@ const ViewMatch = () => {
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [selectedTab, setSelectedTab] = useState('summary');
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (matchId && !initialLoadDone) {
@@ -105,30 +108,30 @@ const ViewMatch = () => {
 
   return (
     <PageTransition>
-      <div className="container mx-auto px-4 py-2 max-w-2xl">
+      <div className="container mx-auto px-2 sm:px-4 py-2 max-w-2xl">
         <div className="bg-white rounded-lg shadow-sm border mb-3 overflow-hidden">
           <div className="bg-green-600 text-white p-3">
             <div className="flex justify-between items-baseline">
-              <h1 className="font-bold">{match.team1.name} vs {match.team2.name}</h1>
+              <h1 className="font-bold text-sm sm:text-base">{match.team1.name} vs {match.team2.name}</h1>
               <span className="text-xs opacity-80">
                 {match.matchStatus === 'in_progress' ? 'Live' : 
                   match.matchStatus === 'completed' ? 'Completed' : 'Not started'}
               </span>
             </div>
-            <div className="text-sm mt-1 opacity-90">
+            <div className="text-xs sm:text-sm mt-1 opacity-90">
               {match.venue || 'Venue not specified'} • {match.totalOvers} overs match
             </div>
             
             {currentInnings && (
-              <div className="mt-2 text-lg font-bold flex justify-between items-baseline">
-                <div>
+              <div className="mt-2 text-base sm:text-lg font-bold flex justify-between items-baseline flex-wrap">
+                <div className="mr-2">
                   {battingTeam.name}: {currentInnings.totalRuns}/{currentInnings.wickets}
-                  <span className="text-sm font-normal ml-2">
+                  <span className="text-xs sm:text-sm font-normal ml-2">
                     ({getCurrentOversText()} ov)
                   </span>
                 </div>
                 {getTargetText() && (
-                  <div className="text-sm font-normal">{getTargetText()}</div>
+                  <div className="text-xs sm:text-sm font-normal">{getTargetText()}</div>
                 )}
               </div>
             )}
@@ -146,12 +149,12 @@ const ViewMatch = () => {
         
         <Tabs defaultValue="summary" className="w-full" onValueChange={setSelectedTab}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="summary" className="flex items-center gap-1">
-              <PlayCircle className="h-4 w-4" />
+            <TabsTrigger value="summary" className="flex items-center gap-1 text-xs sm:text-sm">
+              <PlayCircle className="h-3 w-3 sm:h-4 sm:w-4" />
               <span>Summary</span>
             </TabsTrigger>
-            <TabsTrigger value="scorecard" className="flex items-center gap-1">
-              <BookOpen className="h-4 w-4" />
+            <TabsTrigger value="scorecard" className="flex items-center gap-1 text-xs sm:text-sm">
+              <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
               <span>Full Scorecard</span>
             </TabsTrigger>
           </TabsList>
@@ -162,23 +165,26 @@ const ViewMatch = () => {
               currentInnings={currentInnings} 
               battingTeam={battingTeam} 
               bowlingTeam={bowlingTeam} 
+              isMobile={isMobile}
             />
           </TabsContent>
           
           <TabsContent value="scorecard" className="mt-2">
             <ScorecardView 
-              match={match}  
+              match={match}
+              isMobile={isMobile}  
             />
           </TabsContent>
         </Tabs>
         
-        <div className="flex justify-between mt-4 mb-8">
+        <div className="flex justify-between mt-4 mb-8 gap-2">
           <Button 
             variant="outline" 
             onClick={() => navigate('/watch-live')}
-            className="text-sm"
+            className="text-xs sm:text-sm px-2 sm:px-4"
+            size={isMobile ? "sm" : "default"}
           >
-            <ArrowLeft className="h-4 w-4 mr-1" /> Back
+            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> Back
           </Button>
           
           <Button 
@@ -195,9 +201,10 @@ const ViewMatch = () => {
                 alert('Link copied to clipboard!');
               }
             }}
-            className="text-sm"
+            className="text-xs sm:text-sm px-2 sm:px-4"
+            size={isMobile ? "sm" : "default"}
           >
-            <Share2 className="h-4 w-4 mr-1" /> Share
+            <Share2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> Share
           </Button>
         </div>
       </div>
@@ -205,7 +212,7 @@ const ViewMatch = () => {
   );
 };
 
-const SummaryView = ({ match, currentInnings, battingTeam, bowlingTeam }: any) => {
+const SummaryView = ({ match, currentInnings, battingTeam, bowlingTeam, isMobile }: any) => {
   if (!currentInnings) {
     return (
       <div className="text-center py-8">
@@ -233,18 +240,18 @@ const SummaryView = ({ match, currentInnings, battingTeam, bowlingTeam }: any) =
   return (
     <div className="space-y-4">
       <Card>
-        <CardHeader className="py-3">
-          <CardTitle className="text-base flex justify-between items-center">
+        <CardHeader className="py-2 px-3 sm:py-3 sm:px-4">
+          <CardTitle className="text-sm sm:text-base flex justify-between items-center">
             <span>This Over</span>
-            <span className="text-sm font-normal">
+            <span className="text-xs sm:text-sm font-normal">
               {currentOverBalls.reduce((total: number, ball: any) => 
                 total + ball.runs + (ball.isWide || ball.isNoBall ? 1 : 0), 0
               )} runs
             </span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="py-2">
-          <div className="flex space-x-2 pb-1 overflow-x-auto">
+        <CardContent className="py-2 px-3 sm:px-4">
+          <div className="flex space-x-2 pb-1 overflow-x-auto scrollbar-none">
             {currentOverBalls.length > 0 ? (
               currentOverBalls.map((ball: any, index: number) => {
                 let displayText = ball.runs.toString();
@@ -262,116 +269,124 @@ const SummaryView = ({ match, currentInnings, battingTeam, bowlingTeam }: any) =
                 return (
                   <div 
                     key={index}
-                    className={`${bgColor} text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium`}
+                    className={`${bgColor} text-white w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0 flex items-center justify-center rounded-full text-xs sm:text-sm font-medium`}
                   >
                     {displayText}
                   </div>
                 );
               })
             ) : (
-              <div className="text-gray-400 py-2 text-sm">No balls bowled yet in this over</div>
+              <div className="text-gray-400 py-2 text-xs sm:text-sm">No balls bowled yet in this over</div>
             )}
           </div>
         </CardContent>
       </Card>
       
       <Card>
-        <CardHeader className="py-3">
-          <CardTitle className="text-base">Batsmen</CardTitle>
+        <CardHeader className="py-2 px-3 sm:py-3 sm:px-4">
+          <CardTitle className="text-sm sm:text-base">Batsmen</CardTitle>
         </CardHeader>
         <CardContent className="py-0 px-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Batsman</TableHead>
-                <TableHead className="text-right w-12">R</TableHead>
-                <TableHead className="text-right w-12">B</TableHead>
-                <TableHead className="text-right w-12">4s</TableHead>
-                <TableHead className="text-right w-12">6s</TableHead>
-                <TableHead className="text-right w-12">SR</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {strikerBatsman && (
-                <TableRow className="bg-green-50">
-                  <TableCell className="font-medium flex items-center">
-                    {strikerBatsman.name}
-                    <span className="ml-1 text-xs">*</span>
-                  </TableCell>
-                  <TableCell className="text-right">{currentInnings.batsmanStats[strikerBatsman.id]?.runs || 0}</TableCell>
-                  <TableCell className="text-right">{currentInnings.batsmanStats[strikerBatsman.id]?.balls || 0}</TableCell>
-                  <TableCell className="text-right">{currentInnings.batsmanStats[strikerBatsman.id]?.fours || 0}</TableCell>
-                  <TableCell className="text-right">{currentInnings.batsmanStats[strikerBatsman.id]?.sixes || 0}</TableCell>
-                  <TableCell className="text-right">
-                    {currentInnings.batsmanStats[strikerBatsman.id]?.balls ? 
-                      ((currentInnings.batsmanStats[strikerBatsman.id]?.runs / 
-                        currentInnings.batsmanStats[strikerBatsman.id]?.balls) * 100).toFixed(1) : 
-                      '0.0'}
-                  </TableCell>
-                </TableRow>
-              )}
-              
-              {nonStrikerBatsman && (
+          <div className="overflow-x-auto -mx-1">
+            <Table className="w-full">
+              <TableHeader>
                 <TableRow>
-                  <TableCell className="font-medium">{nonStrikerBatsman.name}</TableCell>
-                  <TableCell className="text-right">{currentInnings.batsmanStats[nonStrikerBatsman.id]?.runs || 0}</TableCell>
-                  <TableCell className="text-right">{currentInnings.batsmanStats[nonStrikerBatsman.id]?.balls || 0}</TableCell>
-                  <TableCell className="text-right">{currentInnings.batsmanStats[nonStrikerBatsman.id]?.fours || 0}</TableCell>
-                  <TableCell className="text-right">{currentInnings.batsmanStats[nonStrikerBatsman.id]?.sixes || 0}</TableCell>
-                  <TableCell className="text-right">
-                    {currentInnings.batsmanStats[nonStrikerBatsman.id]?.balls ? 
-                      ((currentInnings.batsmanStats[nonStrikerBatsman.id]?.runs / 
-                        currentInnings.batsmanStats[nonStrikerBatsman.id]?.balls) * 100).toFixed(1) : 
-                      '0.0'}
-                  </TableCell>
+                  <TableHead className="text-xs sm:text-sm whitespace-nowrap">Batsman</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">R</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">B</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">4s</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">6s</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">SR</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {strikerBatsman && (
+                  <TableRow className="bg-green-50">
+                    <TableCell className="font-medium flex items-center text-xs sm:text-sm py-2 whitespace-nowrap">
+                      <span className="truncate max-w-[110px] sm:max-w-none">{strikerBatsman.name}</span>
+                      <span className="ml-1 text-xs">*</span>
+                    </TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-2">{currentInnings.batsmanStats[strikerBatsman.id]?.runs || 0}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-2">{currentInnings.batsmanStats[strikerBatsman.id]?.balls || 0}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-2">{currentInnings.batsmanStats[strikerBatsman.id]?.fours || 0}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-2">{currentInnings.batsmanStats[strikerBatsman.id]?.sixes || 0}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-2">
+                      {currentInnings.batsmanStats[strikerBatsman.id]?.balls ? 
+                        ((currentInnings.batsmanStats[strikerBatsman.id]?.runs / 
+                          currentInnings.batsmanStats[strikerBatsman.id]?.balls) * 100).toFixed(1) : 
+                        '0.0'}
+                    </TableCell>
+                  </TableRow>
+                )}
+                
+                {nonStrikerBatsman && (
+                  <TableRow>
+                    <TableCell className="font-medium text-xs sm:text-sm py-2 whitespace-nowrap">
+                      <span className="truncate max-w-[110px] sm:max-w-none block">{nonStrikerBatsman.name}</span>
+                    </TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-2">{currentInnings.batsmanStats[nonStrikerBatsman.id]?.runs || 0}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-2">{currentInnings.batsmanStats[nonStrikerBatsman.id]?.balls || 0}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-2">{currentInnings.batsmanStats[nonStrikerBatsman.id]?.fours || 0}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-2">{currentInnings.batsmanStats[nonStrikerBatsman.id]?.sixes || 0}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-2">
+                      {currentInnings.batsmanStats[nonStrikerBatsman.id]?.balls ? 
+                        ((currentInnings.batsmanStats[nonStrikerBatsman.id]?.runs / 
+                          currentInnings.batsmanStats[nonStrikerBatsman.id]?.balls) * 100).toFixed(1) : 
+                        '0.0'}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
       
       <Card>
-        <CardHeader className="py-3">
-          <CardTitle className="text-base">Bowler</CardTitle>
+        <CardHeader className="py-2 px-3 sm:py-3 sm:px-4">
+          <CardTitle className="text-sm sm:text-base">Bowler</CardTitle>
         </CardHeader>
         <CardContent className="py-0 px-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Bowler</TableHead>
-                <TableHead className="text-right w-12">O</TableHead>
-                <TableHead className="text-right w-12">M</TableHead>
-                <TableHead className="text-right w-12">R</TableHead>
-                <TableHead className="text-right w-12">W</TableHead>
-                <TableHead className="text-right w-12">Econ</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentBowler && (
+          <div className="overflow-x-auto -mx-1">
+            <Table className="w-full">
+              <TableHeader>
                 <TableRow>
-                  <TableCell className="font-medium">{currentBowler.name}</TableCell>
-                  <TableCell className="text-right">{currentInnings.bowlerStats[currentBowler.id]?.overs.toFixed(1) || 0}</TableCell>
-                  <TableCell className="text-right">{currentInnings.bowlerStats[currentBowler.id]?.maidens || 0}</TableCell>
-                  <TableCell className="text-right">{currentInnings.bowlerStats[currentBowler.id]?.runs || 0}</TableCell>
-                  <TableCell className="text-right">{currentInnings.bowlerStats[currentBowler.id]?.wickets || 0}</TableCell>
-                  <TableCell className="text-right">
-                    {currentInnings.bowlerStats[currentBowler.id]?.balls ? 
-                      ((currentInnings.bowlerStats[currentBowler.id]?.runs / 
-                        (currentInnings.bowlerStats[currentBowler.id]?.balls / 6)) * 6).toFixed(1) : 
-                      '0.0'}
-                  </TableCell>
+                  <TableHead className="text-xs sm:text-sm whitespace-nowrap">Bowler</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">O</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">M</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">R</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">W</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">Econ</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {currentBowler && (
+                  <TableRow>
+                    <TableCell className="font-medium text-xs sm:text-sm py-2 whitespace-nowrap">
+                      <span className="truncate max-w-[110px] sm:max-w-none block">{currentBowler.name}</span>
+                    </TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-2">{currentInnings.bowlerStats[currentBowler.id]?.overs.toFixed(1) || 0}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-2">{currentInnings.bowlerStats[currentBowler.id]?.maidens || 0}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-2">{currentInnings.bowlerStats[currentBowler.id]?.runs || 0}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-2">{currentInnings.bowlerStats[currentBowler.id]?.wickets || 0}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-2">
+                      {currentInnings.bowlerStats[currentBowler.id]?.balls ? 
+                        ((currentInnings.bowlerStats[currentBowler.id]?.runs / 
+                          (currentInnings.bowlerStats[currentBowler.id]?.balls / 6)) * 6).toFixed(1) : 
+                        '0.0'}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
   );
 };
 
-const ScorecardView = ({ match }: any) => {
+const ScorecardView = ({ match, isMobile }: any) => {
   const [selectedInnings, setSelectedInnings] = useState(match.currentInnings);
   
   if (match.innings.length === 0) {
@@ -462,9 +477,9 @@ const ScorecardView = ({ match }: any) => {
               <Button
                 key={idx}
                 variant={selectedInnings === idx ? "default" : "outline"}
-                size="sm"
+                size={isMobile ? "sm" : "default"}
                 onClick={() => setSelectedInnings(idx)}
-                className="flex-1"
+                className="flex-1 text-xs sm:text-sm"
               >
                 {team.name}
               </Button>
@@ -474,12 +489,12 @@ const ScorecardView = ({ match }: any) => {
       )}
       
       <Card>
-        <CardHeader className="py-3">
-          <CardTitle className="text-base flex justify-between items-center">
-            <span>
+        <CardHeader className="py-2 px-3 sm:py-3 sm:px-4">
+          <CardTitle className="text-sm sm:text-base flex justify-between items-center">
+            <span className="truncate max-w-[150px] sm:max-w-none">
               {battingTeam.name} - {innings.totalRuns}/{innings.wickets}
             </span>
-            <span className="text-sm font-normal">
+            <span className="text-xs sm:text-sm font-normal">
               {innings.currentOver}.{innings.currentBall} ov
             </span>
           </CardTitle>
@@ -487,99 +502,105 @@ const ScorecardView = ({ match }: any) => {
       </Card>
       
       <Card>
-        <CardHeader className="py-3">
-          <CardTitle className="text-base">Batting</CardTitle>
+        <CardHeader className="py-2 px-3 sm:py-3 sm:px-4">
+          <CardTitle className="text-sm sm:text-base">Batting</CardTitle>
         </CardHeader>
         <CardContent className="py-0 px-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Batsman</TableHead>
-                <TableHead className="text-right w-12">R</TableHead>
-                <TableHead className="text-right w-12">B</TableHead>
-                <TableHead className="text-right w-12">4s</TableHead>
-                <TableHead className="text-right w-12">6s</TableHead>
-                <TableHead className="text-right w-12">SR</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {batsmen.map((batsman) => (
-                <TableRow key={batsman.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{batsman.name}</div>
-                      <div className="text-xs text-gray-500">{getDismissalText(batsman)}</div>
-                    </div>
+          <div className="overflow-x-auto -mx-1">
+            <Table className="w-full">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs sm:text-sm whitespace-nowrap">Batsman</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">R</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">B</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">4s</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">6s</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">SR</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {batsmen.map((batsman) => (
+                  <TableRow key={batsman.id}>
+                    <TableCell className="py-1 sm:py-2">
+                      <div>
+                        <div className="font-medium text-xs sm:text-sm truncate max-w-[110px] sm:max-w-none">{batsman.name}</div>
+                        <div className="text-[10px] sm:text-xs text-gray-500 truncate max-w-[110px] sm:max-w-none">{getDismissalText(batsman)}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-1 sm:py-2">{batsman.runs}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-1 sm:py-2">{batsman.balls}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-1 sm:py-2">{batsman.fours}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-1 sm:py-2">{batsman.sixes}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-1 sm:py-2">
+                      {batsman.balls ? ((batsman.runs / batsman.balls) * 100).toFixed(1) : '0.0'}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                
+                <TableRow>
+                  <TableCell colSpan={5} className="text-[10px] sm:text-xs py-1 sm:py-2">
+                    <span className="font-medium">Extras</span>
+                    <span className="ml-2 text-gray-600 text-[10px] sm:text-xs">
+                      ({innings.extras.wides} w, {innings.extras.noBalls} nb, 
+                       {innings.extras.byes} b, {innings.extras.legByes} lb)
+                    </span>
                   </TableCell>
-                  <TableCell className="text-right">{batsman.runs}</TableCell>
-                  <TableCell className="text-right">{batsman.balls}</TableCell>
-                  <TableCell className="text-right">{batsman.fours}</TableCell>
-                  <TableCell className="text-right">{batsman.sixes}</TableCell>
-                  <TableCell className="text-right">
-                    {batsman.balls ? ((batsman.runs / batsman.balls) * 100).toFixed(1) : '0.0'}
+                  <TableCell className="text-right font-medium text-xs sm:text-sm py-1 sm:py-2">
+                    {innings.extras.wides + innings.extras.noBalls + 
+                     innings.extras.byes + innings.extras.legByes}
                   </TableCell>
                 </TableRow>
-              ))}
-              
-              <TableRow>
-                <TableCell colSpan={5} className="text-sm">
-                  <span className="font-medium">Extras</span>
-                  <span className="ml-2 text-gray-600">
-                    ({innings.extras.wides} w, {innings.extras.noBalls} nb, 
-                     {innings.extras.byes} b, {innings.extras.legByes} lb)
-                  </span>
-                </TableCell>
-                <TableCell className="text-right font-medium">
-                  {innings.extras.wides + innings.extras.noBalls + 
-                   innings.extras.byes + innings.extras.legByes}
-                </TableCell>
-              </TableRow>
-              
-              <TableRow className="bg-gray-50 font-medium">
-                <TableCell colSpan={5}>
-                  <span>Total</span>
-                  <span className="ml-2 text-gray-600">
-                    ({innings.wickets} wkts, {innings.currentOver}.{innings.currentBall} ov)
-                  </span>
-                </TableCell>
-                <TableCell className="text-right">{innings.totalRuns}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+                
+                <TableRow className="bg-gray-50 font-medium">
+                  <TableCell colSpan={5} className="py-1 sm:py-2">
+                    <span className="text-xs sm:text-sm">Total</span>
+                    <span className="ml-2 text-gray-600 text-[10px] sm:text-xs">
+                      ({innings.wickets} wkts, {innings.currentOver}.{innings.currentBall} ov)
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right text-xs sm:text-sm py-1 sm:py-2">{innings.totalRuns}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
       
       <Card>
-        <CardHeader className="py-3">
-          <CardTitle className="text-base">Bowling</CardTitle>
+        <CardHeader className="py-2 px-3 sm:py-3 sm:px-4">
+          <CardTitle className="text-sm sm:text-base">Bowling</CardTitle>
         </CardHeader>
         <CardContent className="py-0 px-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Bowler</TableHead>
-                <TableHead className="text-right w-12">O</TableHead>
-                <TableHead className="text-right w-12">M</TableHead>
-                <TableHead className="text-right w-12">R</TableHead>
-                <TableHead className="text-right w-12">W</TableHead>
-                <TableHead className="text-right w-12">Econ</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {bowlers.map((bowler) => (
-                <TableRow key={bowler.id}>
-                  <TableCell className="font-medium">{bowler.name}</TableCell>
-                  <TableCell className="text-right">{bowler.overs.toFixed(1)}</TableCell>
-                  <TableCell className="text-right">{bowler.maidens}</TableCell>
-                  <TableCell className="text-right">{bowler.runs}</TableCell>
-                  <TableCell className="text-right">{bowler.wickets}</TableCell>
-                  <TableCell className="text-right">
-                    {bowler.balls ? ((bowler.runs / (bowler.balls / 6)) * 6).toFixed(1) : '0.0'}
-                  </TableCell>
+          <div className="overflow-x-auto -mx-1">
+            <Table className="w-full">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs sm:text-sm whitespace-nowrap">Bowler</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">O</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">M</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">R</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">W</TableHead>
+                  <TableHead className="text-right w-8 sm:w-12 text-xs sm:text-sm">Econ</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {bowlers.map((bowler) => (
+                  <TableRow key={bowler.id}>
+                    <TableCell className="font-medium text-xs sm:text-sm py-1 sm:py-2 whitespace-nowrap">
+                      <span className="truncate max-w-[110px] sm:max-w-none block">{bowler.name}</span>
+                    </TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-1 sm:py-2">{bowler.overs.toFixed(1)}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-1 sm:py-2">{bowler.maidens}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-1 sm:py-2">{bowler.runs}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-1 sm:py-2">{bowler.wickets}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-1 sm:py-2">
+                      {bowler.balls ? ((bowler.runs / (bowler.balls / 6)) * 6).toFixed(1) : '0.0'}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
