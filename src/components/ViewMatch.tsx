@@ -18,29 +18,34 @@ const ViewMatch = () => {
   const { matchId } = useParams();
   const { match, loadMatch, isLoading } = useMatch();
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
-
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [selectedTab, setSelectedTab] = useState('summary');
 
   useEffect(() => {
-    if (matchId) {
-      loadMatch(matchId);
-    } else {
-      // If no matchId in URL, check if there's a current match in context
-      if (!match) {
-        navigate('/watch-live');
-      }
+    if (matchId && !initialLoadDone) {
+      loadMatch(matchId)
+        .then(() => setInitialLoadDone(true))
+        .catch(err => console.error("Error loading match:", err));
+    } else if (!match && !matchId) {
+      navigate('/watch-live');
     }
-  }, [matchId, navigate, loadMatch, match]);
+  }, [matchId, navigate, loadMatch, match, initialLoadDone]);
 
   useEffect(() => {
     let interval: number | undefined;
     
-    if (isAutoRefresh && match?.matchStatus === 'in_progress') {
+    if (initialLoadDone && isAutoRefresh && match?.matchStatus === 'in_progress') {
       interval = window.setInterval(() => {
         if (matchId) {
-          loadMatch(matchId);
+          loadMatch(matchId).catch(err => {
+            console.error("Error refreshing match data:", err);
+            if (interval) {
+              clearInterval(interval);
+              setIsAutoRefresh(false);
+            }
+          });
         }
-      }, 10000); // Refresh every 10 seconds
+      }, 15000);
     }
     
     return () => {
@@ -48,9 +53,9 @@ const ViewMatch = () => {
         clearInterval(interval);
       }
     };
-  }, [isAutoRefresh, match?.matchStatus, matchId, loadMatch]);
+  }, [isAutoRefresh, match?.matchStatus, matchId, loadMatch, initialLoadDone]);
 
-  if (isLoading) {
+  if (isLoading && !initialLoadDone) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-pulse flex flex-col items-center">
@@ -101,7 +106,6 @@ const ViewMatch = () => {
   return (
     <PageTransition>
       <div className="container mx-auto px-4 py-2 max-w-2xl">
-        {/* Match Header */}
         <div className="bg-white rounded-lg shadow-sm border mb-3 overflow-hidden">
           <div className="bg-green-600 text-white p-3">
             <div className="flex justify-between items-baseline">
@@ -131,7 +135,6 @@ const ViewMatch = () => {
           </div>
         </div>
         
-        {/* Auto-refresh toggle */}
         <div className="flex items-center justify-end mb-2 gap-2">
           <span className="text-xs text-gray-500">Auto refresh</span>
           <Switch
@@ -141,7 +144,6 @@ const ViewMatch = () => {
           />
         </div>
         
-        {/* Tabs */}
         <Tabs defaultValue="summary" className="w-full" onValueChange={setSelectedTab}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="summary" className="flex items-center gap-1">
@@ -154,7 +156,6 @@ const ViewMatch = () => {
             </TabsTrigger>
           </TabsList>
           
-          {/* Summary Tab */}
           <TabsContent value="summary" className="mt-2">
             <SummaryView 
               match={match} 
@@ -164,7 +165,6 @@ const ViewMatch = () => {
             />
           </TabsContent>
           
-          {/* Scorecard Tab */}
           <TabsContent value="scorecard" className="mt-2">
             <ScorecardView 
               match={match}  
@@ -172,7 +172,6 @@ const ViewMatch = () => {
           </TabsContent>
         </Tabs>
         
-        {/* Footer Actions */}
         <div className="flex justify-between mt-4 mb-8">
           <Button 
             variant="outline" 
@@ -206,7 +205,6 @@ const ViewMatch = () => {
   );
 };
 
-// Summary View Component
 const SummaryView = ({ match, currentInnings, battingTeam, bowlingTeam }: any) => {
   if (!currentInnings) {
     return (
@@ -216,7 +214,6 @@ const SummaryView = ({ match, currentInnings, battingTeam, bowlingTeam }: any) =
     );
   }
   
-  // Current batsmen on crease
   const strikerBatsman = battingTeam.players.find(
     (p: Player) => p.id === currentInnings.onStrike
   );
@@ -227,17 +224,14 @@ const SummaryView = ({ match, currentInnings, battingTeam, bowlingTeam }: any) =
     )
   );
   
-  // Current bowler
   const currentBowler = bowlingTeam.players.find(
     (p: Player) => p.id === currentInnings.currentBowler
   );
   
-  // Get last over balls
   const currentOverBalls = getBallEventsFromCurrentOver(currentInnings);
   
   return (
     <div className="space-y-4">
-      {/* Current Over */}
       <Card>
         <CardHeader className="py-3">
           <CardTitle className="text-base flex justify-between items-center">
@@ -281,7 +275,6 @@ const SummaryView = ({ match, currentInnings, battingTeam, bowlingTeam }: any) =
         </CardContent>
       </Card>
       
-      {/* Current Batsmen */}
       <Card>
         <CardHeader className="py-3">
           <CardTitle className="text-base">Batsmen</CardTitle>
@@ -338,7 +331,6 @@ const SummaryView = ({ match, currentInnings, battingTeam, bowlingTeam }: any) =
         </CardContent>
       </Card>
       
-      {/* Current Bowler */}
       <Card>
         <CardHeader className="py-3">
           <CardTitle className="text-base">Bowler</CardTitle>
@@ -379,7 +371,6 @@ const SummaryView = ({ match, currentInnings, battingTeam, bowlingTeam }: any) =
   );
 };
 
-// Full Scorecard View Component
 const ScorecardView = ({ match }: any) => {
   const [selectedInnings, setSelectedInnings] = useState(match.currentInnings);
   
@@ -395,7 +386,6 @@ const ScorecardView = ({ match }: any) => {
   const battingTeam = innings.battingTeamId === match.team1.id ? match.team1 : match.team2;
   const bowlingTeam = innings.bowlingTeamId === match.team1.id ? match.team1 : match.team2;
   
-  // Get all batsmen with stats
   const getBatsmenWithStats = () => {
     return Object.entries(innings.batsmanStats)
       .map(([playerId, stats]: [string, any]) => {
@@ -407,12 +397,10 @@ const ScorecardView = ({ match }: any) => {
         };
       })
       .sort((a, b) => {
-        // Sort batsmen by their position (assumed from their stats creation time)
         return a.id.localeCompare(b.id);
       });
   };
   
-  // Get all bowlers with stats
   const getBowlersWithStats = () => {
     return Object.entries(innings.bowlerStats)
       .map(([playerId, stats]: [string, any]) => {
@@ -424,7 +412,6 @@ const ScorecardView = ({ match }: any) => {
         };
       })
       .sort((a, b) => {
-        // Sort by wickets (descending) then economy (ascending)
         if (b.wickets !== a.wickets) return b.wickets - a.wickets;
         
         const aEcon = a.balls ? (a.runs / (a.balls / 6)) : 999;
@@ -436,7 +423,6 @@ const ScorecardView = ({ match }: any) => {
   const batsmen = getBatsmenWithStats();
   const bowlers = getBowlersWithStats();
   
-  // Get dismissal description
   const getDismissalText = (batsman: any) => {
     if (!batsman.isOut) return 'not out';
     
@@ -468,7 +454,6 @@ const ScorecardView = ({ match }: any) => {
   
   return (
     <div className="space-y-4">
-      {/* Innings Selector */}
       {match.innings.length > 1 && (
         <div className="flex space-x-2 mb-4">
           {match.innings.map((inn: Innings, idx: number) => {
@@ -488,7 +473,6 @@ const ScorecardView = ({ match }: any) => {
         </div>
       )}
       
-      {/* Innings Summary */}
       <Card>
         <CardHeader className="py-3">
           <CardTitle className="text-base flex justify-between items-center">
@@ -502,7 +486,6 @@ const ScorecardView = ({ match }: any) => {
         </CardHeader>
       </Card>
       
-      {/* Batting Scorecard */}
       <Card>
         <CardHeader className="py-3">
           <CardTitle className="text-base">Batting</CardTitle>
@@ -538,7 +521,6 @@ const ScorecardView = ({ match }: any) => {
                 </TableRow>
               ))}
               
-              {/* Extras */}
               <TableRow>
                 <TableCell colSpan={5} className="text-sm">
                   <span className="font-medium">Extras</span>
@@ -553,7 +535,6 @@ const ScorecardView = ({ match }: any) => {
                 </TableCell>
               </TableRow>
               
-              {/* Total */}
               <TableRow className="bg-gray-50 font-medium">
                 <TableCell colSpan={5}>
                   <span>Total</span>
@@ -568,7 +549,6 @@ const ScorecardView = ({ match }: any) => {
         </CardContent>
       </Card>
       
-      {/* Bowling Scorecard */}
       <Card>
         <CardHeader className="py-3">
           <CardTitle className="text-base">Bowling</CardTitle>

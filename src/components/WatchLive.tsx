@@ -10,6 +10,7 @@ import {
   NextButton, 
   BackButton,
 } from '@/components/ui-components';
+import { toast } from '@/hooks/use-toast';
 import { Eye } from 'lucide-react';
 
 const WatchLive = () => {
@@ -21,9 +22,16 @@ const WatchLive = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate match ID
+    // Basic validation
     if (!matchId) {
       setMatchIdError('Match ID is required');
+      return;
+    }
+
+    // Ensure match ID is in correct format (6 characters, alphanumeric)
+    const formattedMatchId = matchId.trim().toUpperCase();
+    if (!/^[A-Z0-9]{6}$/.test(formattedMatchId)) {
+      setMatchIdError('Invalid match ID format. Should be 6 characters.');
       return;
     }
 
@@ -31,13 +39,17 @@ const WatchLive = () => {
 
     try {
       // Load the match with the provided ID in viewer mode
-      await loadMatch(matchId.toUpperCase());
+      await loadMatch(formattedMatchId);
       
       // Navigate to the view-only scoring interface
-      navigate(`/watch/${matchId.toUpperCase()}`);
+      navigate(`/watch/${formattedMatchId}`);
     } catch (err: any) {
-      // Error handling is done in the context
       console.error('Failed to load match for viewing', err);
+      toast({
+        title: "Error",
+        description: err.message || 'Match not found or cannot be accessed',
+        variant: "destructive",
+      });
     }
   };
 
