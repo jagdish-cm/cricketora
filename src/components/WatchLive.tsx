@@ -48,7 +48,7 @@ const WatchLive = () => {
         title: "Match found",
         description: "Loading match data...",
         variant: "default", 
-        className: "bg-green-100 border-green-300 text-green-800"
+        className: "toast-info"
       });
       
       // Navigate to the view-only scoring interface
@@ -59,7 +59,7 @@ const WatchLive = () => {
         title: "Error",
         description: err.message || 'Match not found or cannot be accessed',
         variant: "destructive",
-        className: "bg-red-100 border-red-300 text-red-800"
+        className: "toast-error"
       });
     }
   };
@@ -68,19 +68,18 @@ const WatchLive = () => {
     <PageTransition>
       <div className="relative min-h-[70vh] w-full overflow-hidden">
         {/* Cricket-themed background elements */}
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden gradient-blue-red">
           {/* Decorative Cricket Elements */}
-          <div className="absolute top-10 left-10 w-20 h-20 rounded-full border-4 border-dashed border-primary/10 animate-spin-slow"></div>
-          <div className="absolute top-1/4 right-10 w-16 h-16 rounded-full bg-primary/5 animate-pulse-subtle"></div>
-          <div className="absolute bottom-20 left-1/3 w-24 h-24 rounded-full border-4 border-primary/10 animate-float" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-10 left-10 w-20 h-20 rounded-full border-4 border-dashed border-blue-500/10 animate-spin-slow"></div>
+          <div className="absolute top-1/4 right-10 w-16 h-16 rounded-full bg-red-500/5 animate-pulse-subtle"></div>
+          <div className="absolute bottom-20 left-1/3 w-24 h-24 rounded-full border-4 border-red-500/10 animate-float" style={{ animationDelay: '1s' }}></div>
           
-          {/* Cricket Stumps (stylized) */}
+          {/* Cricket ball (stylized) */}
           <div className="absolute -bottom-10 right-10 opacity-10">
-            <div className="relative h-40 w-20">
-              <div className="absolute left-0 bottom-0 w-2 h-40 bg-gray-500 rounded-t-md"></div>
-              <div className="absolute left-9 bottom-0 w-2 h-40 bg-gray-500 rounded-t-md"></div>
-              <div className="absolute left-18 bottom-0 w-2 h-40 bg-gray-500 rounded-t-md"></div>
-              <div className="absolute left-0 top-0 w-20 h-2 bg-gray-500 rounded-md"></div>
+            <div className="relative h-40 w-40">
+              <div className="absolute inset-0 rounded-full cricket-ball-gradient"></div>
+              <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-white/30 transform -translate-x-1/2 rotate-[25deg]"></div>
+              <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-white/30 transform -translate-x-1/2 -rotate-[25deg]"></div>
             </div>
           </div>
         </div>
@@ -89,12 +88,13 @@ const WatchLive = () => {
           <SectionTitle 
             title="Watch Live Match" 
             subtitle="Enter the match ID to follow the live score"
+            className="text-blue-900"
           />
           
-          <GlassCard className="p-4 sm:p-6 w-full max-w-md mx-auto backdrop-blur-sm bg-white/80">
+          <GlassCard className="p-4 sm:p-6 w-full max-w-md mx-auto backdrop-blur-sm bg-white/90 shadow-lg border border-blue-100">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-blue-500/20 rounded-lg blur-md opacity-70 group-hover:opacity-100 transition duration-1000"></div>
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-red-500/20 rounded-lg blur-md opacity-70 group-hover:opacity-100 transition duration-1000"></div>
                 <FormInput
                   label="Match ID"
                   type="text"
@@ -115,14 +115,16 @@ const WatchLive = () => {
                   onClick={() => navigate('/')}
                   disabled={isLoading}
                   size={isMobile ? "sm" : "default"}
-                  className="text-xs sm:text-sm px-2 sm:px-4 flex-row flex items-center"
+                  className="text-xs sm:text-sm px-2 sm:px-4 flex items-center"
+                  variant="blue-outline"
                 />
                 <NextButton 
                   type="submit"
                   isLoading={isLoading}
                   iconRight={<Eye className="h-3 w-3 sm:h-4 sm:w-4 ml-1.5" />}
                   size={isMobile ? "sm" : "default"}
-                  className="text-xs sm:text-sm px-2 sm:px-4 flex-row flex items-center"
+                  className="text-xs sm:text-sm px-2 sm:px-4 flex items-center"
+                  variant="gradient-blue"
                 >
                   Watch Live
                 </NextButton>
