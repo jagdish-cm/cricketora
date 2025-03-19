@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMatch, BallEvent, Player } from '@/context/MatchContext';
@@ -539,14 +540,14 @@ const ScoringInterface = () => {
   
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <header className="bg-primary text-white sticky top-0 z-30">
+      <header className="bg-blue-600 text-white sticky top-0 z-30">
         <div className="container px-2 py-2 mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="mr-2 text-white hover:bg-primary/80"
+                className="mr-2 text-white hover:bg-blue-700/80"
                 onClick={() => navigate('/')}
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -558,7 +559,7 @@ const ScoringInterface = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-white hover:bg-primary/80 rounded-full h-8 w-8"
+                className="text-white hover:bg-blue-700/80 rounded-full h-8 w-8"
               >
                 <Share2 className="h-4 w-4" />
               </Button>
@@ -567,7 +568,7 @@ const ScoringInterface = () => {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="text-white hover:bg-primary/80 rounded-full h-8 w-8"
+                    className="text-white hover:bg-blue-700/80 rounded-full h-8 w-8"
                   >
                     <Menu className="h-4 w-4" />
                   </Button>
@@ -630,7 +631,7 @@ const ScoringInterface = () => {
       <PageTransition className="flex-grow flex flex-col max-w-full">
         <div className="container mx-auto px-2 py-2 flex-grow flex flex-col">
           <div className="bg-white rounded-md shadow-sm border mb-2 overflow-hidden">
-            <div className="bg-primary text-white px-3 py-3">
+            <div className="bg-blue-600 text-white px-3 py-3">
               <div className="flex justify-between items-baseline">
                 <h2 className="text-base font-semibold">{battingTeam.name}</h2>
                 <div className="flex items-baseline">
@@ -837,7 +838,7 @@ const CurrentOverDisplay = ({
       ball.isWide || ball.isNoBall ? "bg-amber-100 border-amber-300 text-amber-700" :
       ball.isBye || ball.isLegBye ? "bg-indigo-100 border-indigo-300 text-indigo-700" :
       ball.runs === 4 ? "bg-blue-100 border-blue-300 text-blue-700" :
-      ball.runs === 6 ? "bg-secondary/10 border-secondary/30 text-secondary" :
+      ball.runs === 6 ? "bg-red-100 border-red-300 text-red-700" :
       "bg-gray-100 border-gray-300 text-gray-700"
     );
   };
@@ -921,4 +922,200 @@ const BatsmenInfo = ({
     for (const batsmanId of currentInnings.currentBatsmen) {
       if (batsmanId) {
         const player = battingTeam.players.find((p: any) => p.id === batsmanId);
-        const stats = currentInnings.bats
+        const stats = currentInnings.batsmanStats[batsmanId];
+        
+        if (player && stats) {
+          result.push({
+            player,
+            stats,
+            isOnStrike: batsmanId === currentInnings.onStrike
+          });
+        }
+      }
+    }
+    
+    return result;
+  };
+  
+  const batsmen = getBatsmen();
+  
+  if (batsmen.length === 0) {
+    return (
+      <div className="bg-white rounded-md shadow-sm border p-2">
+        <div className="py-4 text-center text-gray-500">
+          No batsmen selected
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="bg-white rounded-md shadow-sm border p-2">
+      <div className="flex justify-between items-center mb-1">
+        <h3 className="text-xs font-medium text-gray-600">Batsmen</h3>
+      </div>
+      
+      <div className="space-y-1">
+        {batsmen.map(({ player, stats, isOnStrike }) => (
+          <div key={player.id} className="flex justify-between items-center">
+            <div className="flex items-center">
+              <div className="flex flex-col">
+                <div className="flex items-center">
+                  {isOnStrike && (
+                    <div className="w-2 h-2 bg-blue-600 rounded-full mr-1.5"></div>
+                  )}
+                  <span className="font-medium text-sm">{player.name}</span>
+                </div>
+                <span className="text-xs text-gray-500">
+                  {stats.balls ? `${(stats.runs / stats.balls * 100).toFixed(1)} SR` : 'Yet to face'}
+                </span>
+              </div>
+            </div>
+            <div className="text-right flex items-center space-x-1">
+              <div className="text-sm font-medium">
+                {stats.runs}
+              </div>
+              <div className="text-xs text-gray-500">
+                ({stats.balls})
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const BowlerInfo = ({ 
+  currentInnings,
+  bowlingTeam
+}: { 
+  currentInnings: any;
+  bowlingTeam: any;
+}) => {
+  const getCurrentBowler = () => {
+    const bowlerId = currentInnings.currentBowler;
+    if (!bowlerId) return null;
+    
+    const player = bowlingTeam.players.find((p: any) => p.id === bowlerId);
+    const stats = currentInnings.bowlerStats[bowlerId];
+    
+    if (player && stats) {
+      return { player, stats };
+    }
+    
+    return null;
+  };
+  
+  const bowler = getCurrentBowler();
+  
+  if (!bowler) {
+    return (
+      <div className="bg-white rounded-md shadow-sm border p-2">
+        <div className="py-4 text-center text-gray-500">
+          No bowler selected
+        </div>
+      </div>
+    );
+  }
+  
+  const completeOvers = Math.floor(bowler.stats.balls / 6);
+  const remainingBalls = bowler.stats.balls % 6;
+  const overs = `${completeOvers}${remainingBalls > 0 ? '.' + remainingBalls : ''}`;
+  
+  return (
+    <div className="bg-white rounded-md shadow-sm border p-2">
+      <div className="flex justify-between items-center mb-1">
+        <h3 className="text-xs font-medium text-gray-600">Bowler</h3>
+      </div>
+      
+      <div className="flex justify-between items-center">
+        <div className="flex items-center">
+          <div className="flex flex-col">
+            <span className="font-medium text-sm">{bowler.player.name}</span>
+            <span className="text-xs text-gray-500">
+              {bowler.stats.balls > 0 ? `${(bowler.stats.runs / bowler.stats.balls * 6).toFixed(2)} Econ` : 'Yet to bowl'}
+            </span>
+          </div>
+        </div>
+        <div className="text-right flex items-center space-x-1">
+          <div className="text-sm flex space-x-3">
+            <span>{overs} ov</span>
+            <span>{bowler.stats.runs} runs</span>
+            <span>{bowler.stats.wickets} wkts</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ScoringButtons = ({
+  selectedRun,
+  onRunSelect,
+  onExtrasClick,
+  onWicketClick,
+  onSwitchStrikeClick,
+  onOverHistoryClick,
+  disabled
+}: {
+  selectedRun: number | null;
+  onRunSelect: (run: number) => void;
+  onExtrasClick: () => void;
+  onWicketClick: () => void;
+  onSwitchStrikeClick: () => void;
+  onOverHistoryClick: () => void;
+  disabled?: boolean;
+}) => {
+  const runButtons = [0, 1, 2, 3, 4, 6];
+  
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-6 gap-2">
+        {runButtons.map(run => (
+          <Button
+            key={run}
+            onClick={() => onRunSelect(run)}
+            variant={run === 4 ? "blue" : run === 6 ? "red" : "outline"}
+            className={`h-16 text-lg ${run === selectedRun ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}
+            disabled={disabled}
+          >
+            {run}
+          </Button>
+        ))}
+      </div>
+      
+      <div className="grid grid-cols-3 gap-2">
+        <Button 
+          variant="outline" 
+          className="h-12 text-blue-700 border-blue-500"
+          onClick={onExtrasClick}
+          disabled={disabled}
+        >
+          Extras
+        </Button>
+        
+        <Button 
+          variant="red" 
+          className="h-12"
+          onClick={onWicketClick}
+          disabled={disabled}
+        >
+          Wicket
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          className="h-12 gap-1"
+          onClick={onSwitchStrikeClick}
+          disabled={disabled}
+        >
+          <RotateCw className="h-4 w-4" />
+          Switch
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default ScoringInterface;
