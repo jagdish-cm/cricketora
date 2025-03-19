@@ -1096,7 +1096,7 @@ const ScoringButtons = ({
         </Button>
         
         <Button 
-          variant="red" 
+          variant="blue" 
           className="h-12"
           onClick={onWicketClick}
           disabled={disabled}

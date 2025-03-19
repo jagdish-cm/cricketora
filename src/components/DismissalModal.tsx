@@ -124,8 +124,8 @@ const DismissalModal = ({
             <Label>Batsman Out</Label>
             <RadioGroup value={batsmanId} onValueChange={setBatsmanId}>
               {batsmen.map((batsman, index) => batsman && (
-                <div key={batsman.id} className="flex items-center space-x-2 py-2">
-                  <RadioGroupItem value={batsman.id} id={`batsman-${batsman.id}`} />
+                <div key={batsman.id} className="flex items-center space-x-2 py-2 border rounded-md px-3 my-1 cursor-pointer hover:bg-gray-50">
+                  <RadioGroupItem value={batsman.id} id={`batsman-${batsman.id}`} className="text-blue-600 focus:ring-blue-600" />
                   <Label htmlFor={`batsman-${batsman.id}`} className="flex-grow cursor-pointer">
                     {batsman.name} {index === 0 ? '(on strike)' : '(non-striker)'}
                   </Label>
