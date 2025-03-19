@@ -114,6 +114,10 @@ export default {
 				'glow': {
 					'0%, 100%': { boxShadow: '0 0 5px rgba(30, 144, 255, 0.5)' },
 					'50%': { boxShadow: '0 0 20px rgba(30, 144, 255, 0.8)' },
+				},
+				'spin-slow': {
+					'0%': { transform: 'rotate(0deg)' },
+					'100%': { transform: 'rotate(360deg)' },
 				}
 			},
 			animation: {
@@ -128,6 +132,7 @@ export default {
 				'float': 'float 3s ease-in-out infinite',
 				'bounce-subtle': 'bounce-subtle 2s ease-in-out infinite',
 				'glow': 'glow 2s ease-in-out infinite',
+				'spin-slow': 'spin-slow 8s linear infinite',
 			},
 			backdropFilter: {
 				'none': 'none',

@@ -17,9 +17,10 @@ const Index = () => {
         
         {/* Animated Cricket Balls Background */}
         <div className="absolute inset-0 overflow-hidden">
+          {/* Cricket Balls */}
           {[...Array(6)].map((_, index) => (
             <div 
-              key={index}
+              key={`ball-${index}`}
               className="absolute rounded-full bg-primary/10 animate-float"
               style={{
                 width: `${Math.random() * 100 + 50}px`,
@@ -31,6 +32,20 @@ const Index = () => {
               }}
             ></div>
           ))}
+          
+          {/* Cricket Stumps */}
+          <div className="absolute bottom-0 left-[10%] w-20 h-40 opacity-20 hidden sm:block">
+            <div className="absolute left-0 bottom-0 w-2 h-40 bg-primary rounded-t-md"></div>
+            <div className="absolute left-9 bottom-0 w-2 h-40 bg-primary rounded-t-md"></div>
+            <div className="absolute left-18 bottom-0 w-2 h-40 bg-primary rounded-t-md"></div>
+            <div className="absolute left-0 top-0 w-20 h-2 bg-primary rounded-md"></div>
+          </div>
+          
+          {/* Cricket Bat */}
+          <div className="absolute bottom-10 right-[15%] opacity-20 transform rotate-45 hidden sm:block">
+            <div className="w-6 h-40 bg-amber-800 rounded-b-md"></div>
+            <div className="w-16 h-20 bg-amber-700 rounded-t-md -translate-x-5"></div>
+          </div>
         </div>
         
         <div className="relative z-10 text-center max-w-3xl px-4 animate-fade-in">
@@ -67,13 +82,32 @@ const Index = () => {
               <Clock className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2 flex-shrink-0 text-primary group-hover:scale-110 transition-transform" />
               <span className="whitespace-nowrap">Resume Match</span>
             </Button>
+            
+            {/* Watch Live Matches Button - MOVED HERE */}
+            <Button 
+              onClick={() => navigate('/watch-live')}
+              variant="secondary"
+              size={isMobile ? "default" : "lg"}
+              className="bg-white border border-primary/20 hover:border-primary/40 hover:bg-gray-50 rounded-full px-4 sm:px-6 py-2 h-auto shadow-sm hover:shadow-md transition-all duration-300 animate-slide-up delay-400 group text-sm sm:text-base"
+            >
+              <Eye className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2 flex-shrink-0 text-primary group-hover:scale-110 transition-transform" />
+              <span className="whitespace-nowrap">Watch Live</span>
+            </Button>
           </div>
         </div>
       </div>
       
       {/* Features Section */}
-      <div className="py-12 sm:py-16 px-4 sm:px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
+      <div className="py-12 sm:py-16 px-4 sm:px-6 bg-white relative overflow-hidden">
+        {/* Background pattern for features section */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute -left-16 -top-16 w-64 h-64 rounded-full border-8 border-primary/20"></div>
+          <div className="absolute right-10 top-20 w-12 h-12 rounded-full bg-primary/10"></div>
+          <div className="absolute left-1/4 bottom-10 w-20 h-20 rounded-full border-4 border-primary/10"></div>
+          <div className="absolute right-1/4 bottom-20 w-32 h-32 rounded-full border-4 border-dashed border-primary/10"></div>
+        </div>
+      
+        <div className="max-w-6xl mx-auto relative z-10">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-center mb-8 sm:mb-12 text-gray-800">
             Premium Cricket Scoring Experience
           </h2>
@@ -97,8 +131,26 @@ const Index = () => {
       </div>
       
       {/* Call to Action */}
-      <div className="py-12 sm:py-16 px-4 sm:px-6 bg-gradient-cricket">
-        <div className="max-w-3xl mx-auto text-center">
+      <div className="py-12 sm:py-16 px-4 sm:px-6 bg-gradient-cricket relative overflow-hidden">
+        {/* Animated cricket dots */}
+        <div className="absolute inset-0">
+          {[...Array(12)].map((_, index) => (
+            <div 
+              key={`cta-dot-${index}`}
+              className="absolute rounded-full bg-primary/5 animate-pulse-subtle"
+              style={{
+                width: `${Math.random() * 20 + 10}px`,
+                height: `${Math.random() * 20 + 10}px`,
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${Math.random() * 3 + 2}s`
+              }}
+            ></div>
+          ))}
+        </div>
+      
+        <div className="max-w-3xl mx-auto text-center relative z-10">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 text-primary">Ready to score your next match?</h2>
           <p className="text-muted-foreground mb-6 sm:mb-8 max-w-xl mx-auto text-sm sm:text-base">
             Experience the best cricket scoring platform with real-time updates and beautiful statistics.
@@ -111,39 +163,6 @@ const Index = () => {
             <span className="whitespace-nowrap">Get Started</span>
             <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 ml-1 flex-shrink-0 group-hover:translate-x-1 transition-transform" />
           </Button>
-        </div>
-      </div>
-      
-      {/* Watch Live Section */}
-      <div className="py-12 sm:py-16 px-4 sm:px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-8">
-            <div className="md:w-1/2">
-              <div className="cricket-glow rounded-xl overflow-hidden shadow-lg">
-                <div className="aspect-video bg-gradient-to-br from-primary/10 to-primary/5 p-6 sm:p-8 flex items-center justify-center">
-                  <div className="text-center">
-                    <Eye className="h-12 w-12 mb-3 sm:mb-4 text-primary/50 mx-auto animate-pulse-subtle flex-shrink-0" />
-                    <h3 className="text-lg sm:text-xl font-semibold text-primary">Live Matches</h3>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="md:w-1/2">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 text-gray-800">Watch Matches Live</h2>
-              <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base">
-                Share the match ID with friends and family so they can watch the match progress in real-time.
-                Get ball-by-ball updates and live scoring.
-              </p>
-              <Button 
-                onClick={() => navigate('/watch-live')}
-                className="group text-sm"
-              >
-                <Eye className="h-4 w-4 mr-2 flex-shrink-0" />
-                <span className="whitespace-nowrap">Watch Live Matches</span>
-                <ChevronRight className="h-4 w-4 ml-1 flex-shrink-0 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
-          </div>
         </div>
       </div>
       
